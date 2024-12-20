@@ -8,7 +8,7 @@ A collection of specialized image processing nodes for ComfyUI, focused on datas
 2. Clone this repository inside the `custom_nodes` directory:
 ```bash
 cd custom_nodes
-git clone [[repository_url]](https://github.com/marcoc2/ComfyUI-AnotherUtils)
+git clone https://github.com/marcoc2/ComfyUI-AnotherUtils
 ```
 3. Restart ComfyUI
 
