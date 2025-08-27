@@ -1,114 +1,183 @@
-# Image Processing Suite for ComfyUI
+# ComfyUI AnotherUtils - Complete Node Collection
 
-A collection of specialized image processing nodes for ComfyUI, focused on dataset preparation and pixel art manipulation.
+A comprehensive collection of custom nodes for ComfyUI, featuring image processing, animation tools, character generation, and advanced filters inspired by GIMP/GEGL.
 
 ## Installation
 
-1. Create a `custom_nodes` directory in your ComfyUI installation if it doesn't exist
-2. Clone this repository inside the `custom_nodes` directory:
+1. Navigate to your ComfyUI `custom_nodes` directory
+2. Clone this repository:
 ```bash
-cd custom_nodes
-git clone https://github.com/marcoc2/ComfyUI-AnotherUtils
+git clone https://github.com/yourusername/ComfyUI-AnotherUtils.git
 ```
 3. Restart ComfyUI
 
-## Nodes
+## Node Categories
 
-### Load Images (Original Size)
+### 🖼️ Image Processing & Loaders
+
+#### Load Images (Original Size)
 Loads all images from a directory while preserving their original dimensions.
+- **Input:** Directory path
+- **Output:** Images in original sizes
+- **Features:** Compatible with RebatchImages, supports common formats
 
-**Inputs:**
-- `directory`: Path to the directory containing images
+#### Load Image (Remove Alpha)
+Loads an image from file path and removes alpha channel, compositing over white background.
+- **Input:** Image file path
+- **Output:** RGB image without transparency
 
-**Outputs:**
-- List of images in their original sizes
+#### Remove Alpha Channel
+Removes alpha channel from already loaded images, compositing over white background.
+- **Input:** RGBA image
+- **Output:** RGB image without transparency
 
-**Features:**
-- Preserves original image dimensions
-- Compatible with ComfyUI's RebatchImages node
-- Supports common image formats (png, jpg, jpeg, bmp, webp)
-
-### Custom Crop
+#### Custom Crop
 Crops images with specific positioning options.
+- **Inputs:** Image, crop dimensions, position mode
+- **Modes:** center, left, right, top, bottom
 
-**Inputs:**
-- `image`: Input image
-- `crop_width`: Width of crop area
-- `crop_height`: Height of crop area
-- `crop_mode`: Cropping position ("center", "left", "right", "top", "bottom")
+#### Smart Resize with Border Fill
+Intelligently resizes images while filling missing areas with border colors.
+- **Inputs:** Image, target size, sampling method
+- **Color Methods:** mean or mode for border detection
 
-**Outputs:**
-- Cropped image
+#### Nearest Neighbor Upscale
+Perfect upscaling for pixel art without interpolation artifacts.
+- **Input:** Image, scale factor (1-8)
+- **Output:** Crisp upscaled image
 
-### Smart Resize
-Resizes images to a target size while intelligently filling missing areas.
+#### Get Last Image
+Utility node that returns the last image from a batch.
+- **Input:** Image batch
+- **Output:** Single image (last in sequence)
 
-**Inputs:**
-- `image`: Input image
-- `target_size`: Desired size
-- `border_sample_size`: Pixels to sample for border color
-- `color_method`: Method to determine fill color ("mean" or "mode")
+### 🎨 Pixel Art Tools
 
-**Outputs:**
-- Resized image with intelligent border filling
+#### Pixel Art Normalizer
+Normalizes images into consistent pixel art style with grid detection.
+- **Inputs:** Image, block size (auto-detect if 0), color count
+- **Outputs:** Normalized image, detected block size, true 1:1 pixel art
+- **Features:** Automatic grid detection, color quantization
 
-### Nearest Neighbor Upscale
-Performs upscaling using nearest neighbor interpolation, perfect for pixel art.
+#### Pixel Art Converter
+Advanced pixel art conversion with customizable settings.
+- **Inputs:** Image, target resolution, color palette options
+- **Output:** Converted pixel art image
 
-**Inputs:**
-- `image`: Input image
-- `scale_factor`: Multiplication factor for upscaling (1-8)
+#### Pixel Art Converter (Parallel)
+Multi-threaded version of the pixel art converter for batch processing.
+- **Input:** Image batch
+- **Output:** Batch of converted pixel art images
 
-**Outputs:**
-- Upscaled image without interpolation artifacts
+### 🎮 Character Generation
 
-### Pixel Art Normalizer
-Normalizes images into pixel art style with consistent grid sizes.
+#### Character Randomizer
+Generates random character attributes for fighting game characters.
+- **Input:** Random seed
+- **Outputs:** 10 character attributes (gender, fighting style, nationality, etc.)
+- **Features:** Deterministic randomization, extensive attribute lists
 
-**Inputs:**
-- `image`: Input image
-- `block_size`: Size of pixel blocks (0 for auto-detection)
-- `n_colors`: Number of colors in output (0 for auto-detection)
+#### Character Constructor
+Constructs detailed character prompts from selected attributes.
+- **Inputs:** All character attributes (gender, style, nationality, etc.)
+- **Outputs:** Complete character prompt, formatted attribute summary
+- **Use Case:** Perfect for AI character generation workflows
 
-**Outputs:**
-- `normalized`: Normalized pixel art image at original size
-- `block_size`: Detected/used block size
-- `downscaled`: 1:1 pixel art version (downscaled by block size)
+### 🏃‍♂️ Animation Tools
 
-**Features:**
-- Automatic grid size detection
-- Color quantization
-- Outputs both full-size and true 1:1 pixel art versions
+#### Fighting Game Character Generator
+Creates character sprites and animations for fighting games.
+- **Inputs:** Character parameters, pose settings
+- **Output:** Character sprite sheets
+
+#### Walking Pose Generator
+Generates walking animation frames with customizable parameters.
+- **Inputs:** Base character, walk cycle settings
+- **Output:** Animation frame sequence
+
+### 🎨 GIMP-Style Filters
+
+#### Adaptive Noise Filter
+Applies frequency-aware noise that adapts to image content.
+- **Inputs:** Image, noise strength, adaptation strength, edge threshold
+- **Features:** More noise on edges, less on flat areas
+- **Types:** Gaussian or Uniform noise
+
+#### RGB Noise (GEGL-like)
+RGB channel noise filter matching GIMP's GEGL implementation.
+- **Inputs:** Image, noise amount per channel, correlation settings
+- **Output:** Image with channel-specific noise
+
+#### CIE LCH Noise (GEGL-like)
+Perceptually uniform noise in CIE LCH color space.
+- **Inputs:** Image, lightness/chroma/hue noise amounts
+- **Features:** Perceptually natural noise distribution
+
+#### Mean Curvature Blur (GEGL-like)
+Edge-preserving blur based on surface curvature analysis.
+- **Inputs:** Image, blur radius, iterations
+- **Features:** Preserves edges while smoothing flat areas
+
+#### Image Type Detector
+Detects if input is single image or batch and provides appropriate outputs.
+- **Input:** Image/batch
+- **Outputs:** Single image, batch images, count, type flag
+- **Use Case:** Workflow routing and debugging
 
 ## Usage Examples
 
-### Basic Image Loading and Batching
+### Character Generation Workflow
 ```
-LoadImagesOriginal -> RebatchImages -> [Further Processing]
+CharacterRandomizer -> CharacterConstructor -> [AI Image Generation]
 ```
 
-### Pixel Art Creation Pipeline
+### Pixel Art Pipeline
 ```
-LoadImagesOriginal -> PixelArtNormalizer -> NearestUpscale
+LoadImagesOriginal -> PixelArtNormalizer -> NearestUpscale -> [Output]
+```
+
+### Advanced Image Processing
+```
+LoadImages -> AdaptiveNoise -> MeanCurvatureBlur -> [Final Processing]
+```
+
+### Animation Creation
+```
+CharacterGenerator -> WalkingPoseGenerator -> [Animation Export]
 ```
 
 ### Dataset Preparation
 ```
-LoadImagesOriginal -> CustomCrop -> SmartResize -> [Training]
+LoadImagesOriginal -> CustomCrop -> SmartResize -> RemoveAlpha -> [Training]
 ```
+
+## Node Count
+**Total: 19 Nodes**
+- 8 Image Processing & Loaders
+- 3 Pixel Art Tools  
+- 2 Character Generation
+- 2 Animation Tools
+- 5 GIMP-Style Filters
 
 ## Dependencies
 - NumPy
 - OpenCV (cv2)
 - scikit-learn
-- PIL
+- PIL/Pillow
 - PyTorch (provided by ComfyUI)
 
-## Notes
-- All nodes maintain compatibility with ComfyUI's native nodes
-- Images are handled in RGB format
-- All operations preserve proper normalization (0-1 range)
+## Features
+- **Batch Processing:** Most nodes support batch operations
+- **Memory Efficient:** Optimized for large image sets
+- **ComfyUI Native:** Full compatibility with ComfyUI ecosystem
+- **Deterministic:** Seed-based operations for reproducible results
+- **Professional Grade:** GIMP/GEGL equivalent filters
 
 ## Contributing
-Feel free to open issues or submit pull requests for improvements.
+Issues and pull requests welcome! Please follow the existing code style and include tests for new features.
 
+## License
+MIT License - See LICENSE file for details
+
+---
+*Created by marcoags - Version 1.0.0*
