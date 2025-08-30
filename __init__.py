@@ -26,6 +26,7 @@ from .gimp_nodes.cie_lch_noise_gegl_like import CIELChNoiseGEGLLike
 from .gimp_nodes.image_type_detector import ImageTypeDetector
 from .gimp_nodes.mean_curvature_blur_gegl_like import MeanCurvatureBlurGEGLLike
 from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
+from .csv_prompt_loader import CSVPromptLoader
 
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
@@ -46,7 +47,8 @@ NODE_CLASS_MAPPINGS = {
     "CIELChNoiseGEGLLike": CIELChNoiseGEGLLike,
     "ImageTypeDetector": ImageTypeDetector,
     "MeanCurvatureBlurGEGLLike": MeanCurvatureBlurGEGLLike,
-    "RGBNoiseGEGLLike": RGBNoiseGEGLLike
+    "RGBNoiseGEGLLike": RGBNoiseGEGLLike,
+    "CSVPromptLoader": CSVPromptLoader
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -67,7 +69,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CIELChNoiseGEGLLike": "CIE LCH Noise (GEGL-like)",
     "ImageTypeDetector": "Image Type Detector",
     "MeanCurvatureBlurGEGLLike": "Mean Curvature Blur (GEGL-like)",
-    "RGBNoiseGEGLLike": "RGB Noise (GEGL-like)"
+    "RGBNoiseGEGLLike": "RGB Noise (GEGL-like)",
+    "CSVPromptLoader": "CSV Prompt Loader"
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
