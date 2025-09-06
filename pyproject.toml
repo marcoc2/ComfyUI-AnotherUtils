@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-anotherutils"
+description = "A collection of specialized image processing nodes for ComfyUI, focused on dataset preparation and pixel art manipulation."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/marcoc2/ComfyUI-AnotherUtils"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-AnotherUtils"
+Icon = ""
