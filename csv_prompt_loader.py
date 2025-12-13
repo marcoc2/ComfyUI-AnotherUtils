@@ -18,7 +18,7 @@ class CSVPromptLoader:
         return {
             "required": {
                 "csv_path": ("STRING", {"default": ""}),
-                "selected_name": (cls._get_names_from_cache, {"default": ""}),
+                "selected_name": (cls._get_names_from_cache(), {"default": ""}),
             },
         }
 

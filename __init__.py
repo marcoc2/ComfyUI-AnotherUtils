@@ -27,6 +27,9 @@ from .gimp_nodes.image_type_detector import ImageTypeDetector
 from .gimp_nodes.mean_curvature_blur_gegl_like import MeanCurvatureBlurGEGLLike
 from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
 from .csv_prompt_loader import CSVPromptLoader
+from .comparison_swipe import ComparisonSwipeNode
+from .folder_video_concatenator import FolderVideoConcatenator
+from .interactive_crop import InteractiveCropNode
 
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
@@ -48,7 +51,10 @@ NODE_CLASS_MAPPINGS = {
     "ImageTypeDetector": ImageTypeDetector,
     "MeanCurvatureBlurGEGLLike": MeanCurvatureBlurGEGLLike,
     "RGBNoiseGEGLLike": RGBNoiseGEGLLike,
-    "CSVPromptLoader": CSVPromptLoader
+    "CSVPromptLoader": CSVPromptLoader,
+    "ComparisonSwipe": ComparisonSwipeNode,
+    "FolderVideoConcatenator": FolderVideoConcatenator,
+    "InteractiveCrop": InteractiveCropNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -70,7 +76,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImageTypeDetector": "Image Type Detector",
     "MeanCurvatureBlurGEGLLike": "Mean Curvature Blur (GEGL-like)",
     "RGBNoiseGEGLLike": "RGB Noise (GEGL-like)",
-    "CSVPromptLoader": "CSV Prompt Loader"
+    "CSVPromptLoader": "CSV Prompt Loader",
+    "ComparisonSwipe": "Comparison Swipe Video",
+    "FolderVideoConcatenator": "Folder Video Concatenator (OpenCV)",
+    "InteractiveCrop": "Interactive Crop"
 }
+WEB_DIRECTORY = "./js"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
