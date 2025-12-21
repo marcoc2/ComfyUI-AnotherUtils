@@ -30,6 +30,8 @@ from .csv_prompt_loader import CSVPromptLoader
 from .comparison_swipe import ComparisonSwipeNode
 from .folder_video_concatenator import FolderVideoConcatenator
 from .interactive_crop import InteractiveCropNode
+from .caption_image_loader import CaptionImageLoader
+from . import server_routes # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
@@ -54,7 +56,8 @@ NODE_CLASS_MAPPINGS = {
     "CSVPromptLoader": CSVPromptLoader,
     "ComparisonSwipe": ComparisonSwipeNode,
     "FolderVideoConcatenator": FolderVideoConcatenator,
-    "InteractiveCrop": InteractiveCropNode
+    "InteractiveCrop": InteractiveCropNode,
+    "CaptionImageLoader": CaptionImageLoader
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -79,7 +82,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CSVPromptLoader": "CSV Prompt Loader",
     "ComparisonSwipe": "Comparison Swipe Video",
     "FolderVideoConcatenator": "Folder Video Concatenator (OpenCV)",
-    "InteractiveCrop": "Interactive Crop"
+    "InteractiveCrop": "Interactive Crop",
+    "CaptionImageLoader": "Caption Image Loader"
 }
 WEB_DIRECTORY = "./js"
 

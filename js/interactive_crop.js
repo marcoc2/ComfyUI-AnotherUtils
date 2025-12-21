@@ -232,6 +232,13 @@ app.registerExtension({
 					ctx.strokeStyle = "#FFFF00";
 					ctx.strokeRect(boxX, boxY, boxW, boxH);
 				}
+
+				// Draw resolution caption below the image
+				const caption = `${this.img.naturalWidth} x ${this.img.naturalHeight}`;
+				ctx.font = "12px Arial";
+				ctx.fillStyle = "#AAA";
+				ctx.textAlign = "center";
+				ctx.fillText(caption, this.size[0] / 2, drawY + drawHeight + 16);
 			};
 
 			// --- Mouse Interaction ---
