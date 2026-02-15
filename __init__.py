@@ -31,7 +31,18 @@ from .comparison_swipe import ComparisonSwipeNode
 from .folder_video_concatenator import FolderVideoConcatenator
 from .interactive_crop import InteractiveCropNode
 from .caption_image_loader import CaptionImageLoader
-from . import server_routes # Register Custom API Routes
+from .video_audio_combiner import (
+    VideoAudioCombiner,
+    VideoAudioCombinerSimple,
+    HAS_NEW_VIDEO_API,
+)
+
+if HAS_NEW_VIDEO_API:
+    from .video_audio_combiner import VideoAudioCombinerV3
+from .acestep_loader import AceStepLoKrLoader
+from .audio_waveform_slicer import AudioWaveformSlicer
+from .audio_slice_selector import AudioSliceSelector
+from . import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
@@ -57,8 +68,17 @@ NODE_CLASS_MAPPINGS = {
     "ComparisonSwipe": ComparisonSwipeNode,
     "FolderVideoConcatenator": FolderVideoConcatenator,
     "InteractiveCrop": InteractiveCropNode,
-    "CaptionImageLoader": CaptionImageLoader
+    "CaptionImageLoader": CaptionImageLoader,
+    "VideoAudioCombiner": VideoAudioCombiner,
+    "VideoAudioCombinerSimple": VideoAudioCombinerSimple,
+    "AceStepLoKrLoader": AceStepLoKrLoader,
+    "AudioWaveformSlicer": AudioWaveformSlicer,
+    "AudioSliceSelector": AudioSliceSelector,
 }
+
+# Add V3 nodes if the new API is available
+if HAS_NEW_VIDEO_API:
+    NODE_CLASS_MAPPINGS["VideoAudioCombinerV3"] = VideoAudioCombinerV3
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "CustomCrop": "Custom Crop",
@@ -83,8 +103,18 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComparisonSwipe": "Comparison Swipe Video",
     "FolderVideoConcatenator": "Folder Video Concatenator (OpenCV)",
     "InteractiveCrop": "Interactive Crop",
-    "CaptionImageLoader": "Caption Image Loader"
+    "CaptionImageLoader": "Caption Image Loader",
+    "VideoAudioCombiner": "Video + Audio Combiner",
+    "VideoAudioCombinerSimple": "Video + Audio Combiner (Simple)",
+    "AceStepLoKrLoader": "AceStep LoKr Loader",
+    "AudioWaveformSlicer": "Audio Waveform Slicer",
+    "AudioSliceSelector": "Audio Slice Selector",
 }
+
+# Add V3 display names if available
+if HAS_NEW_VIDEO_API:
+    NODE_DISPLAY_NAME_MAPPINGS["VideoAudioCombinerV3"] = "Video + Audio Combiner (V3)"
+
 WEB_DIRECTORY = "./js"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
