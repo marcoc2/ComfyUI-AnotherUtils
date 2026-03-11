@@ -42,6 +42,9 @@ if HAS_NEW_VIDEO_API:
 from .acestep_loader import AceStepLoKrLoader
 from .audio_waveform_slicer import AudioWaveformSlicer
 from .audio_slice_selector import AudioSliceSelector
+from .audio_concatenate import AudioConcatenate
+from .load_gif_frames import LoadGifFrames, RemapGifFrames
+from .batch_image_list import BatchToImageList
 from . import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
@@ -74,6 +77,10 @@ NODE_CLASS_MAPPINGS = {
     "AceStepLoKrLoader": AceStepLoKrLoader,
     "AudioWaveformSlicer": AudioWaveformSlicer,
     "AudioSliceSelector": AudioSliceSelector,
+    "AudioConcatenate": AudioConcatenate,
+    "LoadGifFrames": LoadGifFrames,
+    "RemapGifFrames": RemapGifFrames,
+    "BatchToImageList": BatchToImageList,
 }
 
 # Add V3 nodes if the new API is available
@@ -109,6 +116,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AceStepLoKrLoader": "AceStep LoKr Loader",
     "AudioWaveformSlicer": "Audio Waveform Slicer",
     "AudioSliceSelector": "Audio Slice Selector",
+    "AudioConcatenate": "Audio Concatenate",
+    "LoadGifFrames": "Load GIF Frames (Raw)",
+    "RemapGifFrames": "Remap GIF Frames",
+    "BatchToImageList": "Batch to Image List",
 }
 
 # Add V3 display names if available
