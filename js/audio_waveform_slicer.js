@@ -1,6 +1,8 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
+console.log("[AudioWaveformSlicer] ===== JS FILE LOADED =====");
+
 const DEBUG = true;
 function log(...args) {
     if (DEBUG) console.log("[AudioWaveformSlicer]", ...args);
@@ -29,6 +31,9 @@ function formatTime(seconds) {
 app.registerExtension({
     name: "AnotherUtils.AudioWaveformSlicer",
     async beforeRegisterNodeDef(nodeType, nodeData, appInstance) {
+        if (nodeData.name === "AudioWaveformSlicer") {
+            console.log("[AudioWaveformSlicer] ===== FOUND NODE DEF =====", nodeData);
+        }
         if (nodeData.name !== "AudioWaveformSlicer") return;
 
         log("Registering AudioWaveformSlicer extension");
@@ -78,9 +83,13 @@ app.registerExtension({
                 if (audioWidget) {
                     const self = this;
                     audioWidget.callback = function () {
+                        self._aws.lastAudioFile = null;
                         self._loadAudioFile();
                     };
                 }
+
+                // Add upload button widget
+                this._addUploadWidget();
 
                 // Set minimum size
                 if (this.size) {
@@ -143,6 +152,65 @@ app.registerExtension({
             } catch (e) {
                 console.error("[AudioWaveformSlicer] Error loading audio:", e);
             }
+        };
+
+        // --- Upload widget ---
+        nodeType.prototype._addUploadWidget = function () {
+            var self = this;
+            var fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "audio/*,video/*,.mp3,.wav,.flac,.ogg,.mp4,.webm";
+            fileInput.style.display = "none";
+            document.body.appendChild(fileInput);
+
+            fileInput.addEventListener("change", async function () {
+                if (!fileInput.files || !fileInput.files.length) return;
+                var file = fileInput.files[0];
+                try {
+                    var formData = new FormData();
+                    formData.append("image", file);
+                    formData.append("type", "input");
+                    formData.append("overwrite", "true");
+
+                    var resp = await api.fetchApi("/upload/image", {
+                        method: "POST",
+                        body: formData,
+                    });
+                    if (resp.ok) {
+                        var data = await resp.json();
+                        var filename = data.name;
+                        log("Uploaded:", filename);
+
+                        // Refresh combo options and select the new file
+                        var audioWidget = self._awsWidgets.audio;
+                        if (audioWidget) {
+                            // Add to options if not already there
+                            if (audioWidget.options && audioWidget.options.values) {
+                                if (audioWidget.options.values.indexOf(filename) === -1) {
+                                    audioWidget.options.values.push(filename);
+                                    audioWidget.options.values.sort();
+                                }
+                            }
+                            audioWidget.value = filename;
+                            self._aws.lastAudioFile = null;
+                            self._loadAudioFile();
+                        }
+                    } else {
+                        console.error("[AudioWaveformSlicer] Upload failed:", resp.status);
+                    }
+                } catch (e) {
+                    console.error("[AudioWaveformSlicer] Upload error:", e);
+                }
+                fileInput.value = "";
+            });
+
+            this._aws.fileInput = fileInput;
+
+            // Add a button widget
+            var uploadWidget = this.addWidget("button", "Upload Audio", "upload", function () {
+                fileInput.click();
+            });
+            uploadWidget.serialize = false;
         };
 
         // --- Calculate peaks ---

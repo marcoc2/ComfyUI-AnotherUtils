@@ -39,12 +39,13 @@ from .video_audio_combiner import (
 
 if HAS_NEW_VIDEO_API:
     from .video_audio_combiner import VideoAudioCombinerV3
-from .acestep_loader import AceStepLoKrLoader
 from .audio_waveform_slicer import AudioWaveformSlicer
 from .audio_slice_selector import AudioSliceSelector
 from .audio_concatenate import AudioConcatenate
 from .load_gif_frames import LoadGifFrames, RemapGifFrames
 from .batch_image_list import BatchToImageList
+from .video_auto_sync_hstack import VideoAutoSyncHStack
+from .folder_image_loader import FolderImageLoader
 from . import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
@@ -74,13 +75,14 @@ NODE_CLASS_MAPPINGS = {
     "CaptionImageLoader": CaptionImageLoader,
     "VideoAudioCombiner": VideoAudioCombiner,
     "VideoAudioCombinerSimple": VideoAudioCombinerSimple,
-    "AceStepLoKrLoader": AceStepLoKrLoader,
     "AudioWaveformSlicer": AudioWaveformSlicer,
     "AudioSliceSelector": AudioSliceSelector,
     "AudioConcatenate": AudioConcatenate,
     "LoadGifFrames": LoadGifFrames,
     "RemapGifFrames": RemapGifFrames,
     "BatchToImageList": BatchToImageList,
+    "VideoAutoSyncHStack": VideoAutoSyncHStack,
+    "FolderImageLoader": FolderImageLoader,
 }
 
 # Add V3 nodes if the new API is available
@@ -113,13 +115,14 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CaptionImageLoader": "Caption Image Loader",
     "VideoAudioCombiner": "Video + Audio Combiner",
     "VideoAudioCombinerSimple": "Video + Audio Combiner (Simple)",
-    "AceStepLoKrLoader": "AceStep LoKr Loader",
     "AudioWaveformSlicer": "Audio Waveform Slicer",
     "AudioSliceSelector": "Audio Slice Selector",
     "AudioConcatenate": "Audio Concatenate",
     "LoadGifFrames": "Load GIF Frames (Raw)",
     "RemapGifFrames": "Remap GIF Frames",
     "BatchToImageList": "Batch to Image List",
+    "VideoAutoSyncHStack": "Video Auto Sync HStack",
+    "FolderImageLoader": "Folder Image Loader",
 }
 
 # Add V3 display names if available

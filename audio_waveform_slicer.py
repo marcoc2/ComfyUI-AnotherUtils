@@ -22,15 +22,20 @@ def load_audio(filepath: str) -> tuple:
             raise ValueError("No audio stream found in the file.")
 
         stream = af.streams.audio[0]
+        stream.codec_context.skip_frame = "NONREF"
         sr = stream.codec_context.sample_rate
         n_channels = stream.channels
 
         frames = []
-        for frame in af.decode(streams=stream.index):
-            buf = torch.from_numpy(frame.to_ndarray())
-            if buf.shape[0] != n_channels:
-                buf = buf.view(-1, n_channels).t()
-            frames.append(buf)
+        for packet in af.demux(streams=stream.index):
+            try:
+                for frame in packet.decode():
+                    buf = torch.from_numpy(frame.to_ndarray())
+                    if buf.shape[0] != n_channels:
+                        buf = buf.view(-1, n_channels).t()
+                    frames.append(buf)
+            except av.error.InvalidDataError:
+                continue
 
         if not frames:
             raise ValueError("No audio frames decoded.")
@@ -49,7 +54,7 @@ class AudioWaveformSlicer:
         )
         return {
             "required": {
-                "audio": (sorted(files), {"audio_upload": True}),
+                "audio": (sorted(files), ),
                 "cut_positions": ("STRING", {"default": "[]", "multiline": False}),
             },
         }
