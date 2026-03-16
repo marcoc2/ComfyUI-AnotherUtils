@@ -7,46 +7,47 @@ __version__ = "1.0.0"
 __author__ = "marcoags"
 __package_name__ = "AnotherUtils"
 
-from .custom_crop import CustomCropNode
-from .smart_resize import SmartResizeNode
-from .nearest_upscale import NearestUpscaleNode
-from .load_images import LoadImagesOriginalSize
-from .pixel_normalizer import PixelArtNormalizerNode
-from .fighting_game_character import FightingGameCharacter
-from .walking_pose import WalkingPoseGenerator
-from .load_remove_alpha import LoadImageRemoveAlpha
-from .pixel_art_converter import PixelArtConverterNode
-from .pixel_art_converter_parallel import PixelArtConverterNodeParallel
-from .last_image import LastImage
-from .character_constructor import CharacterConstructor
-from .character_generator import CharacterRandomizer
-from .remove_alpha import RemoveAlphaNode
+from .image_processing.custom_crop import CustomCropNode
+from .image_processing.smart_resize import SmartResizeNode
+from .image_processing.nearest_upscale import NearestUpscaleNode
+from .loaders.load_images import LoadImagesOriginalSize
+from .pixel_art.pixel_normalizer import PixelArtNormalizerNode
+from .characters.fighting_game_character import FightingGameCharacter
+from .characters.walking_pose import WalkingPoseGenerator
+from .loaders.load_remove_alpha import LoadImageRemoveAlpha
+from .pixel_art.pixel_art_converter import PixelArtConverterNode
+from .pixel_art.pixel_art_converter_parallel import PixelArtConverterNodeParallel
+from .loaders.last_image import LastImage
+from .characters.character_constructor import CharacterConstructor
+from .characters.character_generator import CharacterRandomizer
+from .image_processing.remove_alpha import RemoveAlphaNode
 from .gimp_nodes.adaptive_noise import AdaptiveNoise
 from .gimp_nodes.cie_lch_noise_gegl_like import CIELChNoiseGEGLLike
 from .gimp_nodes.image_type_detector import ImageTypeDetector
 from .gimp_nodes.mean_curvature_blur_gegl_like import MeanCurvatureBlurGEGLLike
 from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
-from .csv_prompt_loader import CSVPromptLoader
-from .comparison_swipe import ComparisonSwipeNode
-from .folder_video_concatenator import FolderVideoConcatenator
-from .interactive_crop import InteractiveCropNode
-from .caption_image_loader import CaptionImageLoader
-from .video_audio_combiner import (
+from .loaders.csv_prompt_loader import CSVPromptLoader
+from .video.comparison_swipe import ComparisonSwipeNode
+from .video.folder_video_concatenator import FolderVideoConcatenator
+from .image_processing.interactive_crop import InteractiveCropNode
+from .loaders.caption_image_loader import CaptionImageLoader
+from .video.video_audio_combiner import (
     VideoAudioCombiner,
     VideoAudioCombinerSimple,
     HAS_NEW_VIDEO_API,
 )
 
 if HAS_NEW_VIDEO_API:
-    from .video_audio_combiner import VideoAudioCombinerV3
-from .audio_waveform_slicer import AudioWaveformSlicer
-from .audio_slice_selector import AudioSliceSelector
-from .audio_concatenate import AudioConcatenate
-from .load_gif_frames import LoadGifFrames, RemapGifFrames
-from .batch_image_list import BatchToImageList
-from .video_auto_sync_hstack import VideoAutoSyncHStack
-from .folder_image_loader import FolderImageLoader
-from . import server_routes  # Register Custom API Routes
+    from .video.video_audio_combiner import VideoAudioCombinerV3
+from .audio.audio_waveform_slicer import AudioWaveformSlicer
+from .audio.audio_slice_selector import AudioSliceSelector
+from .audio.audio_concatenate import AudioConcatenate
+from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
+from .loaders.batch_image_list import BatchToImageList
+from .video.video_auto_sync_hstack import VideoAutoSyncHStack
+from .loaders.folder_image_loader import FolderImageLoader
+from .logic_management.dataset_loader import DatasetLoader
+from .core import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
@@ -83,6 +84,7 @@ NODE_CLASS_MAPPINGS = {
     "BatchToImageList": BatchToImageList,
     "VideoAutoSyncHStack": VideoAutoSyncHStack,
     "FolderImageLoader": FolderImageLoader,
+    "DatasetLoader": DatasetLoader,
 }
 
 # Add V3 nodes if the new API is available
@@ -123,6 +125,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BatchToImageList": "Batch to Image List",
     "VideoAutoSyncHStack": "Video Auto Sync HStack",
     "FolderImageLoader": "Folder Image Loader",
+    "DatasetLoader": "Dataset Loader (Images + Captions)",
 }
 
 # Add V3 display names if available
