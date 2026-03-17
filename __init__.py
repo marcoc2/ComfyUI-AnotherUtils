@@ -10,6 +10,7 @@ __package_name__ = "AnotherUtils"
 from .image_processing.custom_crop import CustomCropNode
 from .image_processing.smart_resize import SmartResizeNode
 from .image_processing.nearest_upscale import NearestUpscaleNode
+from .image_processing.image_grid_slicer import ImageGridSlicer
 from .loaders.load_images import LoadImagesOriginalSize
 from .pixel_art.pixel_normalizer import PixelArtNormalizerNode
 from .characters.fighting_game_character import FightingGameCharacter
@@ -53,6 +54,7 @@ NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
     "SmartResize": SmartResizeNode,
     "NearestUpscale": NearestUpscaleNode,
+    "ImageGridSlicer": ImageGridSlicer,
     "LoadImagesOriginal": LoadImagesOriginalSize,
     "PixelArtNormalizer": PixelArtNormalizerNode,
     "FightingGameCharacter": FightingGameCharacter,
@@ -95,6 +97,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CustomCrop": "Custom Crop",
     "SmartResize": "Smart Resize with Border Fill",
     "NearestUpscale": "Nearest Neighbor Upscale",
+    "ImageGridSlicer": "Image Grid Slicer",
     "LoadImagesOriginal": "Load Images (Original Size)",
     "PixelArtNormalizer": "Pixel Art Normalizer",
     "FightingGameCharacter": "Fighting Game Character Generator",
