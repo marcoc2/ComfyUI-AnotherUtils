@@ -19,6 +19,12 @@ class ImageGridSlicer:
         # image shape: [B, H, W, C]
         # We only support single image batch for slicing or we slice all images in batch
         batch_size, height, width, channels = image.shape
+        # Handle alpha channel (flatten with white background like LoadGifFrames)
+        if channels == 4:
+            alpha = image[:, :, :, 3:4]
+            rgb = image[:, :, :, :3]
+            image = rgb * alpha + (1.0 - alpha)
+            channels = 3
         # Calculate tile dimensions
         tile_width = width // grid_x
         tile_height = height // grid_y
