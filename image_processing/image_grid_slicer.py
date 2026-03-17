@@ -17,14 +17,15 @@ class ImageGridSlicer:
 
     def slice_image(self, image, grid_x, grid_y):
         # image shape: [B, H, W, C]
-        # We only support single image batch for slicing or we slice all images in batch
-        batch_size, height, width, channels = image.shape
         # Handle alpha channel (flatten with white background like LoadGifFrames)
-        if channels == 4:
+        if image.shape[-1] == 4:
             alpha = image[:, :, :, 3:4]
             rgb = image[:, :, :, :3]
+            # Standard alpha blending with white background: result = foreground * alpha + background * (1 - alpha)
             image = rgb * alpha + (1.0 - alpha)
-            channels = 3
+
+        batch_size, height, width, _ = image.shape
+
         # Calculate tile dimensions
         tile_width = width // grid_x
         tile_height = height // grid_y
