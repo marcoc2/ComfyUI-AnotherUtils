@@ -237,3 +237,6 @@ cache/
 # Node specific temporary files
 node_temp/
 processing_temp/
+
+# References
+reference/
