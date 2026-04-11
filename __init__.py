@@ -48,6 +48,7 @@ from .loaders.batch_image_list import BatchToImageList
 from .video.video_auto_sync_hstack import VideoAutoSyncHStack
 from .loaders.folder_image_loader import FolderImageLoader
 from .logic_management.dataset_loader import DatasetLoader
+from .logic_management.image_list_sampler import ImageListSampler
 from .core import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
@@ -87,6 +88,7 @@ NODE_CLASS_MAPPINGS = {
     "VideoAutoSyncHStack": VideoAutoSyncHStack,
     "FolderImageLoader": FolderImageLoader,
     "DatasetLoader": DatasetLoader,
+    "ImageListSampler": ImageListSampler,
 }
 
 # Add V3 nodes if the new API is available
@@ -129,6 +131,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "VideoAutoSyncHStack": "Video Auto Sync HStack",
     "FolderImageLoader": "Folder Image Loader",
     "DatasetLoader": "Dataset Loader (Images + Captions)",
+    "ImageListSampler": "Image List Sampler",
 }
 
 # Add V3 display names if available
