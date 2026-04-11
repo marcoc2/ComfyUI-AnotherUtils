@@ -8,10 +8,10 @@ class ImageListSampler:
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("sampled_images",)
+    RETURN_TYPES = ("IMAGE", "INT")
+    RETURN_NAMES = ("sampled_images", "indices")
     INPUT_IS_LIST = True
-    OUTPUT_IS_LIST = (True,)
+    OUTPUT_IS_LIST = (True, True)
     FUNCTION = "sample_images"
     CATEGORY = "AnotherUtils/logic"
 
@@ -38,10 +38,10 @@ class ImageListSampler:
         
         total = len(all_frames)
         if cnt <= 0:
-            return ([],)
+            return ([], [])
         
         if cnt >= total:
-            return (all_frames,)
+            return (all_frames, list(range(total)))
 
         # Calculate equally spaced indices
         step = total / cnt
@@ -49,4 +49,4 @@ class ImageListSampler:
         
         sampled = [all_frames[i] for i in indices]
         
-        return (sampled,)
+        return (sampled, indices)
