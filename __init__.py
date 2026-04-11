@@ -46,6 +46,8 @@ from .audio.audio_concatenate import AudioConcatenate
 from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
 from .loaders.batch_image_list import BatchToImageList
 from .video.video_auto_sync_hstack import VideoAutoSyncHStack
+from .video.ltxv_multi_guide import LTXVMultiGuide
+from .video.ltxv_vid2vid import LTXVVid2Vid
 from .loaders.folder_image_loader import FolderImageLoader
 from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
@@ -89,6 +91,8 @@ NODE_CLASS_MAPPINGS = {
     "FolderImageLoader": FolderImageLoader,
     "DatasetLoader": DatasetLoader,
     "ImageListSampler": ImageListSampler,
+    "LTXVMultiGuide": LTXVMultiGuide,
+    "LTXVVid2Vid": LTXVVid2Vid,
 }
 
 # Add V3 nodes if the new API is available
@@ -132,6 +136,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FolderImageLoader": "Folder Image Loader",
     "DatasetLoader": "Dataset Loader (Images + Captions)",
     "ImageListSampler": "Image List Sampler",
+    "LTXVMultiGuide": "LTXV Multi Guide (N Frames)",
+    "LTXVVid2Vid": "LTXV Vid2Vid Encode",
 }
 
 # Add V3 display names if available

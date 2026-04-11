@@ -16,13 +16,8 @@ class ImageGridSlicer:
     CATEGORY = "AnotherUtils/image_processing"
 
     def slice_image(self, image, grid_x, grid_y):
-        # image shape: [B, H, W, C]
-        # Handle alpha channel (flatten with white background like LoadGifFrames)
-        if image.shape[-1] == 4:
-            alpha = image[:, :, :, 3:4]
-            rgb = image[:, :, :, :3]
-            # Standard alpha blending with white background: result = foreground * alpha + background * (1 - alpha)
-            image = rgb * alpha + (1.0 - alpha)
+        # image shape: [B, H, W, C] — strip alpha channel if present
+        image = image[..., :3]
 
         batch_size, height, width, _ = image.shape
 

@@ -15,6 +15,7 @@ class LoadGifFrames:
         return {
             "required": {
                 "gif": (sorted(files), {"image_upload": True}),
+                "repetition_count": ("INT", {"default": 1, "min": 1, "max": 100, "step": 1, "tooltip": "Number of times to repeat the GIF frame sequence."}),
             }
         }
 
@@ -24,7 +25,7 @@ class LoadGifFrames:
     CATEGORY = "image/loaders"
     TITLE = "Load GIF Frames (Raw)"
 
-    def load_gif(self, gif):
+    def load_gif(self, gif, repetition_count):
         gif_path = folder_paths.get_annotated_filepath(gif)
         img = Image.open(gif_path)
 
@@ -38,7 +39,7 @@ class LoadGifFrames:
 
         # Deduplicate: hash each frame to find identical ones
         unique_frames = []
-        frame_map = []        # frame_map[i] = index in unique_frames
+        base_frame_map = []        # frame_map[i] = index in unique_frames
         hash_to_index = {}
 
         for frame_np in all_frames:
@@ -46,11 +47,16 @@ class LoadGifFrames:
             if h not in hash_to_index:
                 hash_to_index[h] = len(unique_frames)
                 unique_frames.append(frame_np)
-            frame_map.append(hash_to_index[h])
+            base_frame_map.append(hash_to_index[h])
+
+        # Apply repetitions to the frame map
+        frame_map = []
+        for _ in range(repetition_count):
+            frame_map.extend(base_frame_map)
 
         unique_batch = torch.stack([torch.from_numpy(f) for f in unique_frames])  # [U, H, W, 3]
 
-        return (unique_batch, json.dumps(frame_map), len(unique_frames), len(all_frames))
+        return (unique_batch, json.dumps(frame_map), len(unique_frames), len(frame_map))
 
     @classmethod
     def IS_CHANGED(cls, gif):
