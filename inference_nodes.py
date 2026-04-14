@@ -4,46 +4,103 @@ import os
 import json
 from .inference.depth_service import DepthAnythingService
 from .inference.detection_service import DetectionService
-from .inference.segmentation_service import SAM2Service
+from .inference.segmentation_service import SAM2Service, SAM2VideoService
 
-class AnotherLoadInferenceModel:
+def filter_models(extension_list, subfolder):
+    base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
+    search_path = os.path.join(base_path, subfolder)
+    another_path = os.path.join(base_path, "another_utils")
+    
+    found = []
+    for path in [search_path, another_path]:
+        if os.path.exists(path):
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    if any(file.endswith(ext) for ext in extension_list):
+                        found.append(file)
+    return sorted(list(set(found)))
+
+class AnotherLoadYOLO:
     @classmethod
     def INPUT_TYPES(cls):
-        # We look for models in ComfyUI/models/another_utils/
-        # and also common paths
+        yolo_sizes = ["n", "s", "m", "l", "x"]
+        yolo_tasks = ["", "-pose", "-seg"]
+        yolo_versions = ["yolov8", "yolo11"]
+        presets = [f"{v}{s}{t}.pt" for v in yolo_versions for t in yolo_tasks for s in yolo_sizes]
+        local = filter_models([".pt", ".pth", ".safetensors"], "ultralytics")
+        models = sorted(list(set(presets + local)))
         return {
             "required": {
-                "model_type": (["YOLO", "SAM2", "DepthAnything"],),
-                "model_name": ("STRING", {"default": "yolov8n.pt"}),
-            },
-            "optional": {
+                "model_name": (models, {"default": "yolov8m.pt"}),
                 "device": (["auto", "cuda", "cpu"],),
             }
         }
-
     RETURN_TYPES = ("ANOTHER_MODEL",)
-    FUNCTION = "load_model"
+    FUNCTION = "load"
     CATEGORY = "AnotherUtils/inference"
+    def load(self, model_name, device="auto"):
+        return (AnotherLoadInferenceModel().load_model("YOLO", model_name, device),)
 
+class AnotherLoadSAM2:
+    @classmethod
+    def INPUT_TYPES(cls):
+        presets = ["sam2_hiera_tiny.pt", "sam2_hiera_small.pt", "sam2_hiera_base_plus.pt", "sam2_hiera_large.pt"]
+        local = filter_models([".pt", ".pth", ".safetensors"], "sam2")
+        models = sorted(list(set(presets + local)))
+        return {
+            "required": {
+                "model_name": (models, {"default": "sam2_hiera_small.pt"}),
+                "mode": (["single_image", "video"], {"default": "single_image"}),
+                "device": (["auto", "cuda", "cpu"],),
+            }
+        }
+    RETURN_TYPES = ("ANOTHER_MODEL",)
+    FUNCTION = "load"
+    CATEGORY = "AnotherUtils/inference"
+    def load(self, model_name, mode="single_image", device="auto"):
+        model_type = "SAM2" if mode == "single_image" else "SAM2_VIDEO"
+        return (AnotherLoadInferenceModel().load_model(model_type, model_name, device),)
+
+class AnotherLoadDepth:
+    @classmethod
+    def INPUT_TYPES(cls):
+        models = ["v3-tiny", "v3-small", "v3-medium", "v3-large"]
+        return {
+            "required": {
+                "model_name": (models, {"default": "v3-small"}),
+                "device": (["auto", "cuda", "cpu"],),
+            }
+        }
+    RETURN_TYPES = ("ANOTHER_MODEL",)
+    FUNCTION = "load"
+    CATEGORY = "AnotherUtils/inference"
+    def load(self, model_name, device="auto"):
+        return (AnotherLoadInferenceModel().load_model("DepthAnything", model_name, device),)
+
+class AnotherLoadInferenceModel:
+    # Keeps this internal for backward compatibility of logic 
+    # but we remove it from NODE_CLASS_MAPPINGS later
     def load_model(self, model_type, model_name, device="auto"):
-        # This node just prepares the config and service
-        # Actual loading can be lazy or immediate.
-        
         # Determine paths
         base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
-        another_models_path = os.path.join(base_path, "another_utils")
         
-        if not os.path.exists(another_models_path):
-            os.makedirs(another_models_path, exist_ok=True)
-
-        model_path = os.path.join(another_models_path, model_name)
+        # Search for the model file
+        model_path = model_name 
         
-        # If not in another_utils, check common comfyui folders
-        if not os.path.exists(model_path):
-            if model_type == "YOLO":
-                model_path = os.path.join(base_path, "ultralytics", model_name)
-            elif model_type == "SAM2":
-                model_path = os.path.join(base_path, "sam2", model_name)
+        if "." in model_name:
+            found = False
+            # Check standard subfolders
+            for sub in ["sam2", "ultralytics", "another_utils", "ultralytics/bbox", "ultralytics/segm"]:
+                check_path = os.path.join(base_path, sub, model_name)
+                if os.path.exists(check_path):
+                    model_path = check_path
+                    found = True
+                    break
+            
+            if not found:
+                # If not found, we set the target path but the service will handle the download
+                subfolder = "sam2" if model_type == "SAM2" else "ultralytics"
+                model_path = os.path.join(base_path, subfolder, model_name)
 
         model_data = {
             "type": model_type,
@@ -53,21 +110,17 @@ class AnotherLoadInferenceModel:
             "service": None
         }
 
-        # Immediate load for validation if possible
+        # Initialize the service (will trigger download if missing)
         if model_type == "YOLO":
             model_data["service"] = DetectionService(model_path, device=device)
         elif model_type == "DepthAnything":
             model_data["service"] = DepthAnythingService(model_name, device=device)
         elif model_type == "SAM2":
-            # SAM2 needs cfg and checkpoint. We assume model_name is the checkpoint.
-            # We use base_plus config as default if not specified.
-            cfg = "sam2_hiera_b+.yaml" # Default
-            if "tiny" in model_name: cfg = "sam2_hiera_t.yaml"
-            elif "small" in model_name: cfg = "sam2_hiera_s.yaml"
-            elif "large" in model_name: cfg = "sam2_hiera_l.yaml"
-            model_data["service"] = SAM2Service(cfg, model_path, device=device)
+            model_data["service"] = SAM2Service(None, model_path, device=device)
+        elif model_type == "SAM2_VIDEO":
+            model_data["service"] = SAM2VideoService(None, model_path, device=device)
 
-        return (model_data,)
+        return model_data
 
 class AnotherYOLOInference:
     @classmethod
@@ -80,8 +133,8 @@ class AnotherYOLOInference:
             }
         }
 
-    RETURN_TYPES = ("BBOX", "KEYPOINTS", "STRING", "IMAGE")
-    RETURN_NAMES = ("bboxes", "keypoints", "labels", "debug_image")
+    RETURN_TYPES = ("BBOX", "KEYPOINTS", "MASK", "STRING", "IMAGE")
+    RETURN_NAMES = ("bboxes", "keypoints", "mask", "labels", "debug_image")
     FUNCTION = "detect"
     CATEGORY = "AnotherUtils/inference"
 
@@ -94,31 +147,107 @@ class AnotherYOLOInference:
         
         all_bboxes = []
         all_kpts = []
+        all_masks = []
         all_labels = []
+        debug_images = []
         
         # Process batch
         for i in range(images.shape[0]):
             img_np = (images[i].cpu().numpy() * 255).astype(np.uint8)
-            detections = service.infer(img_np)
+            detections = service.infer(img_np, conf=threshold)
             
-            # ComfyUI BBOX format: [[x1, y1, x2, y2], ...]
-            # or sometimes dicts. Impact pack uses [x1, y1, x2, y2].
             img_bboxes = [d["bbox"] for d in detections]
             img_kpts = [d.get("pose", []) for d in detections]
             img_labels = [d["label"] for d in detections]
             
+            # Merge masks for this image
+            current_img_masks = [d["mask"] for d in detections if "mask" in d]
+            if current_img_masks:
+                merged = np.any(current_img_masks, axis=0)
+            else:
+                merged = np.zeros((images.shape[1], images.shape[2]), dtype=bool)
+            
+            # Draw debug image with bboxes, labels, and pose
+            debug_img = img_np.copy()
+            h, w = debug_img.shape[:2]
+            
+            # COCO skeleton connections for drawing lines between keypoints
+            SKELETON = [
+                (0,1),(0,2),(1,3),(2,4),           # head
+                (5,6),(5,7),(7,9),(6,8),(8,10),     # arms
+                (5,11),(6,12),(11,12),              # torso
+                (11,13),(13,15),(12,14),(14,16)     # legs
+            ]
+            # Colors per keypoint region (RGB)
+            KPT_COLOR = [
+                [255,0,0],    # 0 nose - red
+                [255,85,0],   # 1 l_eye
+                [255,170,0],  # 2 r_eye
+                [255,255,0],  # 3 l_ear
+                [170,255,0],  # 4 r_ear
+                [0,255,0],    # 5 l_shoulder - green
+                [0,255,85],   # 6 r_shoulder
+                [0,255,170],  # 7 l_elbow
+                [0,255,255],  # 8 r_elbow
+                [0,170,255],  # 9 l_wrist
+                [0,85,255],   # 10 r_wrist
+                [0,0,255],    # 11 l_hip - blue
+                [85,0,255],   # 12 r_hip
+                [170,0,255],  # 13 l_knee
+                [255,0,255],  # 14 r_knee
+                [255,0,170],  # 15 l_ankle
+                [255,0,85],   # 16 r_ankle
+            ]
+            
+            for det in detections:
+                x1, y1, x2, y2 = [int(c) for c in det["bbox"]]
+                conf = det.get("confidence", 0)
+                label = f'{det["label"]} {conf:.2f}'
+                
+                # Draw bbox rectangle (green, 2px)
+                t = 2  # thickness
+                debug_img[max(0,y1):min(h,y1+t), max(0,x1):min(w,x2)] = [0, 255, 0]
+                debug_img[max(0,y2-t):min(h,y2), max(0,x1):min(w,x2)] = [0, 255, 0]
+                debug_img[max(0,y1):min(h,y2), max(0,x1):min(w,x1+t)] = [0, 255, 0]
+                debug_img[max(0,y1):min(h,y2), max(0,x2-t):min(w,x2)] = [0, 255, 0]
+                
+                # Draw label background
+                label_h = 16
+                label_w = min(len(label) * 8 + 4, w - x1)
+                ly1 = max(0, y1 - label_h)
+                debug_img[ly1:y1, x1:min(w, x1 + label_w)] = [0, 255, 0]
+                
+                # Draw pose keypoints and skeleton if available
+                kpts = det.get("pose", [])
+                if kpts and len(kpts) >= 17:
+                    # Draw skeleton lines first (so dots are on top)
+                    for (a, b) in SKELETON:
+                        ax, ay = int(kpts[a][0]), int(kpts[a][1])
+                        bx, by = int(kpts[b][0]), int(kpts[b][1])
+                        if ax > 0 and ay > 0 and bx > 0 and by > 0:
+                            # Simple line drawing using numpy (Bresenham-lite)
+                            n_steps = max(abs(bx - ax), abs(by - ay), 1)
+                            for s in range(n_steps + 1):
+                                px = int(ax + (bx - ax) * s / n_steps)
+                                py = int(ay + (by - ay) * s / n_steps)
+                                if 0 <= py < h and 0 <= px < w:
+                                    debug_img[max(0,py-1):min(h,py+1), max(0,px-1):min(w,px+1)] = [200, 200, 200]
+                    
+                    # Draw keypoint dots
+                    r = 3  # radius
+                    for ki, (kx, ky) in enumerate(kpts[:17]):
+                        kx, ky = int(kx), int(ky)
+                        if kx > 0 and ky > 0 and 0 <= ky < h and 0 <= kx < w:
+                            color = KPT_COLOR[ki] if ki < len(KPT_COLOR) else [255, 255, 255]
+                            debug_img[max(0,ky-r):min(h,ky+r), max(0,kx-r):min(w,kx+r)] = color
+            
             all_bboxes.append(img_bboxes)
             all_kpts.append(img_kpts)
+            all_masks.append(torch.from_numpy(merged.astype(np.float32)))
             all_labels.append(img_labels)
+            debug_images.append(torch.from_numpy(debug_img.astype(np.float32) / 255.0))
 
-        # Return format: BBOX and KEYPOINTS are usually lists of lists in ComfyUI
-        # Since we might have multiple images, we return the first one's detection for simplicity 
-        # OR we return the batch if the receiver supports it.
-        # Most BBOX nodes expect a single list for the current image.
-        
-        # Flattening or returning batch is tricky in ComfyUI.
-        # For now, let's return the full list and hope the next node handles iterables.
-        return (all_bboxes, all_kpts, json.dumps(all_labels), images)
+        return (all_bboxes, all_kpts, torch.stack(all_masks), json.dumps(all_labels), torch.stack(debug_images))
 
 class AnotherSAM2Inference:
     @classmethod
@@ -187,6 +316,117 @@ class AnotherSAM2Inference:
 
         return (torch.stack(all_masks),)
 
+
+class AnotherSAM2VideoAddPoints:
+    """Add point prompts to a specific frame for video segmentation.
+    Copied from comfyui-segment-anything-2 Sam2VideoSegmentationAddPoints."""
+    
+    @classmethod
+    def IS_CHANGED(s):
+        return ""
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("ANOTHER_MODEL",),
+                "coordinates_positive": ("STRING", {"forceInput": True}),
+                "frame_index": ("INT", {"default": 0}),
+                "object_index": ("INT", {"default": 0}),
+            },
+            "optional": {
+                "image": ("IMAGE",),
+                "coordinates_negative": ("STRING", {"forceInput": True}),
+                "prev_state": ("ANOTHER_SAM2_STATE",),
+            }
+        }
+
+    RETURN_TYPES = ("ANOTHER_MODEL", "ANOTHER_SAM2_STATE")
+    RETURN_NAMES = ("model", "state")
+    FUNCTION = "add_points"
+    CATEGORY = "AnotherUtils/inference"
+
+    def add_points(self, model, coordinates_positive, frame_index, object_index,
+                   image=None, coordinates_negative=None, prev_state=None):
+        if model["type"] != "SAM2_VIDEO":
+            raise ValueError("Model must be loaded with mode='video' for video segmentation")
+        
+        service: SAM2VideoService = model["service"]
+        
+        # Parse coordinates
+        try:
+            pos = json.loads(coordinates_positive.replace("'", '"'))
+            pos = [(c['x'], c['y']) for c in pos]
+        except:
+            pos = []
+        
+        neg = None
+        if coordinates_negative:
+            try:
+                neg_parsed = json.loads(coordinates_negative.replace("'", '"'))
+                neg = [(c['x'], c['y']) for c in neg_parsed]
+            except:
+                neg = None
+        
+        # Initialize state from images if no previous state
+        if prev_state is None:
+            if image is None:
+                raise ValueError("Either 'image' or 'prev_state' is required")
+            B, H, W, C = image.shape
+            model_input_size = service.model.image_size
+            # Resize to model input size: [B,H,W,C] -> [B,C,H,W]
+            from comfy.utils import common_upscale
+            resized = common_upscale(
+                image.movedim(-1, 1),
+                model_input_size, model_input_size,
+                "bilinear", "disabled"
+            ).movedim(1, -1)
+            # init_state expects [B, C, H, W]
+            service.init_state(resized.permute(0, 3, 1, 2).contiguous(), H, W)
+            num_frames = B
+        else:
+            service.inference_state = prev_state["inference_state"]
+            num_frames = prev_state["num_frames"]
+        
+        # Add points
+        if pos:
+            service.add_points(frame_index, object_index, pos, neg)
+        
+        state = {
+            "inference_state": service.inference_state,
+            "num_frames": num_frames,
+        }
+        return (model, state)
+
+
+class AnotherSAM2VideoPropagate:
+    """Propagate segmentation across all video frames.
+    Copied from comfyui-segment-anything-2 Sam2VideoSegmentation."""
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("ANOTHER_MODEL",),
+                "state": ("ANOTHER_SAM2_STATE",),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "propagate"
+    CATEGORY = "AnotherUtils/inference"
+
+    def propagate(self, model, state):
+        if model["type"] != "SAM2_VIDEO":
+            raise ValueError("Model must be loaded with mode='video'")
+        
+        service: SAM2VideoService = model["service"]
+        service.inference_state = state["inference_state"]
+        
+        mask_tensor = service.propagate()
+        return (mask_tensor,)
+
+
 class AnotherDepthInference:
     @classmethod
     def INPUT_TYPES(cls):
@@ -249,13 +489,21 @@ class AnotherBBoxToPoints:
         return (json.dumps(points),)
 
 class AnotherPoseToPoints:
+    BODY_PARTS = [
+        "all", "face", "upper_body",
+        "nose", "eyes", "ears", "shoulders", "elbows", "wrists", "hips", "knees", "ankles",
+        "left_eye", "right_eye", "left_ear", "right_ear",
+        "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
+        "left_wrist", "right_wrist", "left_hip", "right_hip",
+        "left_knee", "right_knee", "left_ankle", "right_ankle",
+    ]
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "keypoints": ("KEYPOINTS",),
-                "point_index": ("INT", {"default": 0, "min": 0, "max": 16, "step": 1}),
-                "filter": ("STRING", {"default": "nose, eyes"}),
+                "body_part": (cls.BODY_PARTS, {"default": "all"}),
             }
         }
 
@@ -264,10 +512,7 @@ class AnotherPoseToPoints:
     FUNCTION = "convert"
     CATEGORY = "AnotherUtils/utils"
 
-    def convert(self, keypoints, point_index, filter):
-        # keypoints: List of [N, 17, 2] (or [17, 2] per detection)
-        # We'll support filtering by index for now as it's more precise
-        
+    def convert(self, keypoints, body_part):
         # 0: nose, 1: l_eye, 2: r_eye, 5: l_sh, 6: r_sh...
         COCO_MAP = {
             "nose": 0, "left_eye": 1, "right_eye": 2, "left_ear": 3, "right_ear": 4,
@@ -275,30 +520,44 @@ class AnotherPoseToPoints:
             "left_wrist": 9, "right_wrist": 10, "left_hip": 11, "right_hip": 12,
             "left_knee": 13, "right_knee": 14, "left_ankle": 15, "right_ankle": 16
         }
+        # Group aliases for convenience
+        ALIASES = {
+            "eyes": ["left_eye", "right_eye"],
+            "ears": ["left_ear", "right_ear"],
+            "shoulders": ["left_shoulder", "right_shoulder"],
+            "elbows": ["left_elbow", "right_elbow"],
+            "wrists": ["left_wrist", "right_wrist"],
+            "hips": ["left_hip", "right_hip"],
+            "knees": ["left_knee", "right_knee"],
+            "ankles": ["left_ankle", "right_ankle"],
+            "face": ["nose", "left_eye", "right_eye"],
+            "upper_body": ["nose", "left_eye", "right_eye", "left_shoulder", "right_shoulder"],
+            "all": list(COCO_MAP.keys()),
+        }
 
         points = []
         
-        # Handle batching
+        # Handle batching: keypoints is List[List[kpts_per_detection]]
         target_kpts = keypoints
         if keypoints and isinstance(keypoints[0], list):
-            target_kpts = keypoints[0] # Take first image detections
+            target_kpts = keypoints[0] # Take first image's detections
 
-        selected_indices = []
-        if filter.strip():
-            for part in filter.split(","):
-                part = part.strip().lower().replace(" ", "_")
-                if part in COCO_MAP:
-                    selected_indices.append(COCO_MAP[part])
-        
-        if not selected_indices:
-            selected_indices = [point_index]
+        # Resolve body_part to keypoint indices
+        if body_part in ALIASES:
+            selected_indices = [COCO_MAP[name] for name in ALIASES[body_part]]
+        elif body_part in COCO_MAP:
+            selected_indices = [COCO_MAP[body_part]]
+        else:
+            selected_indices = list(COCO_MAP.values())  # fallback to all
 
         for det_kpts in target_kpts:
-            # det_kpts is [17, 2]
+            # det_kpts is [[x,y], [x,y], ...] with 17 entries
             for idx in selected_indices:
                 if idx < len(det_kpts):
                     p = det_kpts[idx]
-                    points.append({"x": float(p[0]), "y": float(p[1])})
+                    # Skip keypoints with 0,0 (not detected)
+                    if float(p[0]) > 0 and float(p[1]) > 0:
+                        points.append({"x": float(p[0]), "y": float(p[1])})
         
         return (json.dumps(points),)
 

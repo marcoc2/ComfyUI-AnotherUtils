@@ -28,6 +28,8 @@ from .gimp_nodes.image_type_detector import ImageTypeDetector
 from .gimp_nodes.mean_curvature_blur_gegl_like import MeanCurvatureBlurGEGLLike
 from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
 from .loaders.csv_prompt_loader import CSVPromptLoader
+from .loaders.trello_prompt_loader import TrelloPromptLoader
+from .loaders.trello_browser import TrelloBrowser
 from .video.comparison_swipe import ComparisonSwipeNode
 from .video.folder_video_concatenator import FolderVideoConcatenator
 from .image_processing.interactive_crop import InteractiveCropNode
@@ -54,9 +56,13 @@ from .logic_management.image_list_sampler import ImageListSampler
 from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
 from .image_processing.point_collector import PointCollectorSAM2
 from .inference_nodes import (
-    AnotherLoadInferenceModel,
+    AnotherLoadYOLO,
+    AnotherLoadSAM2,
+    AnotherLoadDepth,
     AnotherYOLOInference,
     AnotherSAM2Inference,
+    AnotherSAM2VideoAddPoints,
+    AnotherSAM2VideoPropagate,
     AnotherDepthInference,
     AnotherBBoxToPoints,
     AnotherPoseToPoints,
@@ -113,9 +119,13 @@ NODE_CLASS_MAPPINGS = {
     "ManualPointToSAM2": ManualPointToSAM2,
     "RefineMask": RefineMask,
     "PointCollectorSAM2": PointCollectorSAM2,
-    "AnotherLoadInferenceModel": AnotherLoadInferenceModel,
+    "AnotherLoadYOLO": AnotherLoadYOLO,
+    "AnotherLoadSAM2": AnotherLoadSAM2,
+    "AnotherLoadDepth": AnotherLoadDepth,
     "AnotherYOLOInference": AnotherYOLOInference,
     "AnotherSAM2Inference": AnotherSAM2Inference,
+    "AnotherSAM2VideoAddPoints": AnotherSAM2VideoAddPoints,
+    "AnotherSAM2VideoPropagate": AnotherSAM2VideoPropagate,
     "AnotherDepthInference": AnotherDepthInference,
     "AnotherBBoxToPoints": AnotherBBoxToPoints,
     "AnotherPoseToPoints": AnotherPoseToPoints,
@@ -123,6 +133,8 @@ NODE_CLASS_MAPPINGS = {
     "AnotherMaskToImage": AnotherMaskToImage,
     "AnotherMaskMath": AnotherMaskMath,
     "AnotherMaskBlur": AnotherMaskBlur,
+    "TrelloPromptLoader": TrelloPromptLoader,
+    "TrelloBrowser": TrelloBrowser,
 }
 
 # Add V3 nodes if the new API is available
@@ -174,9 +186,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ManualPointToSAM2": "Manual Point to SAM2 (JSON)",
     "RefineMask": "Refine Mask (Expand & Blur)",
     "PointCollectorSAM2": "Interactive Point Collector (SAM2)",
-    "AnotherLoadInferenceModel": "Load Inference Model (AnotherUtils)",
+    "AnotherLoadYOLO": "Load YOLO Model (AnotherUtils)",
+    "AnotherLoadSAM2": "Load SAM2 Model (AnotherUtils)",
+    "AnotherLoadDepth": "Load Depth Model (AnotherUtils)",
     "AnotherYOLOInference": "YOLO/Pose Inference (AnotherUtils)",
     "AnotherSAM2Inference": "SAM2 Image Inference (AnotherUtils)",
+    "AnotherSAM2VideoAddPoints": "SAM2 Video Add Points (AnotherUtils)",
+    "AnotherSAM2VideoPropagate": "SAM2 Video Propagate (AnotherUtils)",
     "AnotherDepthInference": "DepthAnything Inference (AnotherUtils)",
     "AnotherBBoxToPoints": "BBox to Central Point (JSON)",
     "AnotherPoseToPoints": "Pose Keypoints to Points (JSON)",
@@ -184,6 +200,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnotherMaskToImage": "Mask to Image (AnotherUtils)",
     "AnotherMaskMath": "Mask Mathematics (AnotherUtils)",
     "AnotherMaskBlur": "Mask Gaussian Blur (AnotherUtils)",
+    "TrelloPromptLoader": "Trello Prompt Loader",
+    "TrelloBrowser": "Trello Browser (Advanced)",
 }
 
 # Add V3 display names if available

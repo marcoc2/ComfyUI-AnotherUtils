@@ -12,11 +12,13 @@ class DepthAnythingService:
     """
     
     MODELS = {
-        "v2-tiny": "https://huggingface.co/depth-anything/Depth-Anything-V2-Tiny/resolve/main/depth_anything_v2_vitl.pth", # Placeholder URL
-        "v3-large": "depth-anything/Depth-Anything-V3-Large" # HuggingFace ID
+        "v3-large": "depth-anything/da3-large",
+        "v3-medium": "depth-anything/da3-base",
+        "v3-small": "depth-anything/da3-small",
+        "v3-tiny": "depth-anything/da3-tiny"
     }
 
-    def __init__(self, model_id="v3-large", device="auto"):
+    def __init__(self, model_id="v3-small", device="auto"):
         self.model_id = model_id
         if device == "auto":
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -29,13 +31,18 @@ class DepthAnythingService:
         if self.model is not None:
             return
 
-        print(f"[AnotherUtils] Loading Depth-Anything model: {self.model_id} on {self.device}")
+        # Map to correct HF ID
+        hf_id = self.MODELS.get(self.model_id, self.model_id)
+        if "/" not in hf_id: # Case handling for IDs like "v3-small"
+             hf_id = f"depth-anything/{hf_id.replace('v3-', 'da3-')}"
+
+        print(f"[AnotherUtils] Loading Depth-Anything model: {hf_id} on {self.device}")
         
         try:
-            if "v3" in self.model_id:
+            if "v3" in self.model_id or "da3" in hf_id:
                 from depth_anything_3.api import DepthAnything3
-                # Auto-downloads from HF
-                self.model = DepthAnything3.from_pretrained("depth-anything/Depth-Anything-V3-Large")
+                # Auto-downloads from HF using the correct ID
+                self.model = DepthAnything3.from_pretrained(hf_id)
             else:
                 # Logic for V2 or older if needed
                 raise NotImplementedError("Only Depth-Anything V3 is currently supported in this service.")

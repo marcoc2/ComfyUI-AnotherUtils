@@ -5,6 +5,7 @@ import io
 import base64
 import json
 from PIL import Image
+from ..loaders.trello_utils import TrelloParser
 
 routes = PromptServer.instance.routes
 
@@ -74,3 +75,16 @@ async def list_images(request):
         })
 
     return web.json_response({"files": files_data})
+
+@routes.get("/another_utils/trello_prompts")
+async def get_trello_prompts(request):
+    if "json_path" not in request.rel_url.query:
+        return web.json_response({"error": "Missing json_path parameter"}, status=400)
+    
+    json_path = request.rel_url.query["json_path"]
+    data = TrelloParser.get_data(json_path)
+    
+    if not data:
+        return web.json_response({"error": "Failed to load Trello JSON"}, status=404)
+        
+    return web.json_response(data)
