@@ -53,6 +53,14 @@ from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
 from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
 from .image_processing.point_collector import PointCollectorSAM2
+from .inference_nodes import (
+    AnotherLoadInferenceModel,
+    AnotherYOLOInference,
+    AnotherSAM2Inference,
+    AnotherDepthInference,
+    AnotherBBoxToPoints,
+    AnotherPoseToPoints
+)
 from .core import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
@@ -101,6 +109,12 @@ NODE_CLASS_MAPPINGS = {
     "ManualPointToSAM2": ManualPointToSAM2,
     "RefineMask": RefineMask,
     "PointCollectorSAM2": PointCollectorSAM2,
+    "AnotherLoadInferenceModel": AnotherLoadInferenceModel,
+    "AnotherYOLOInference": AnotherYOLOInference,
+    "AnotherSAM2Inference": AnotherSAM2Inference,
+    "AnotherDepthInference": AnotherDepthInference,
+    "AnotherBBoxToPoints": AnotherBBoxToPoints,
+    "AnotherPoseToPoints": AnotherPoseToPoints,
 }
 
 # Add V3 nodes if the new API is available
@@ -152,6 +166,12 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ManualPointToSAM2": "Manual Point to SAM2 (JSON)",
     "RefineMask": "Refine Mask (Expand & Blur)",
     "PointCollectorSAM2": "Interactive Point Collector (SAM2)",
+    "AnotherLoadInferenceModel": "Load Inference Model (AnotherUtils)",
+    "AnotherYOLOInference": "YOLO/Pose Inference (AnotherUtils)",
+    "AnotherSAM2Inference": "SAM2 Image Inference (AnotherUtils)",
+    "AnotherDepthInference": "DepthAnything Inference (AnotherUtils)",
+    "AnotherBBoxToPoints": "BBox to Central Point (JSON)",
+    "AnotherPoseToPoints": "Pose Keypoints to Points (JSON)",
 }
 
 # Add V3 display names if available
