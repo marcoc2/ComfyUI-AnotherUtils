@@ -59,7 +59,9 @@ from .inference_nodes import (
     AnotherSAM2Inference,
     AnotherDepthInference,
     AnotherBBoxToPoints,
-    AnotherPoseToPoints
+    AnotherPoseToPoints,
+    AnotherImageToMask,
+    AnotherMaskToImage
 )
 from .core import server_routes  # Register Custom API Routes
 
@@ -115,6 +117,8 @@ NODE_CLASS_MAPPINGS = {
     "AnotherDepthInference": AnotherDepthInference,
     "AnotherBBoxToPoints": AnotherBBoxToPoints,
     "AnotherPoseToPoints": AnotherPoseToPoints,
+    "AnotherImageToMask": AnotherImageToMask,
+    "AnotherMaskToImage": AnotherMaskToImage,
 }
 
 # Add V3 nodes if the new API is available
@@ -172,6 +176,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnotherDepthInference": "DepthAnything Inference (AnotherUtils)",
     "AnotherBBoxToPoints": "BBox to Central Point (JSON)",
     "AnotherPoseToPoints": "Pose Keypoints to Points (JSON)",
+    "AnotherImageToMask": "Image to Mask (AnotherUtils)",
+    "AnotherMaskToImage": "Mask to Image (AnotherUtils)",
 }
 
 # Add V3 display names if available

@@ -301,3 +301,52 @@ class AnotherPoseToPoints:
                     points.append({"x": float(p[0]), "y": float(p[1])})
         
         return (json.dumps(points),)
+
+class AnotherImageToMask:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "channel": (["red", "green", "blue", "alpha", "luminance"], {"default": "luminance"}),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "convert"
+    CATEGORY = "AnotherUtils/utils"
+
+    def convert(self, image, channel):
+        if channel == "luminance":
+            mask = image.mean(dim=-1)
+        elif channel == "red":
+            mask = image[:, :, :, 0]
+        elif channel == "green":
+            mask = image[:, :, :, 1]
+        elif channel == "blue":
+            mask = image[:, :, :, 2]
+        elif channel == "alpha":
+            if image.shape[-1] == 4:
+                mask = image[:, :, :, 3]
+            else:
+                mask = torch.ones((image.shape[0], image.shape[1], image.shape[2]), device=image.device)
+        return (mask,)
+
+class AnotherMaskToImage:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask": ("MASK",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "convert"
+    CATEGORY = "AnotherUtils/utils"
+
+    def convert(self, mask):
+        # mask is [B, H, W]
+        if mask.ndim == 2:
+            mask = mask.unsqueeze(0)
+        return (mask.unsqueeze(-1).repeat(1, 1, 1, 3),)
