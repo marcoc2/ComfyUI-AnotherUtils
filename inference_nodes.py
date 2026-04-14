@@ -350,3 +350,72 @@ class AnotherMaskToImage:
         if mask.ndim == 2:
             mask = mask.unsqueeze(0)
         return (mask.unsqueeze(-1).repeat(1, 1, 1, 3),)
+
+class AnotherMaskMath:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask_a": ("MASK",),
+                "operation": (["multiply", "add", "subtract", "and", "or", "xor"], {"default": "multiply"}),
+            },
+            "optional": {
+                "mask_b": ("MASK",),
+                "value": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.01}),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "apply"
+    CATEGORY = "AnotherUtils/utils"
+
+    def apply(self, mask_a, operation, mask_b=None, value=1.0):
+        # Ensure mask_a is tensor
+        res = mask_a.clone()
+        
+        # If mask_b is not provided, use the scalar value
+        other = mask_b if mask_b is not None else value
+        
+        if operation == "multiply":
+            res = res * other
+        elif operation == "add":
+            res = res + other
+        elif operation == "subtract":
+            res = res - other
+        elif operation == "and":
+            res = torch.min(res, torch.tensor(other))
+        elif operation == "or":
+            res = torch.max(res, torch.tensor(other))
+        elif operation == "xor":
+            res = torch.abs(res - other)
+            
+        return (torch.clamp(res, 0.0, 1.0),)
+
+class AnotherMaskBlur:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask": ("MASK",),
+                "blur_radius": ("INT", {"default": 5, "min": 0, "max": 100, "step": 1}),
+                "sigma": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 10.0, "step": 0.1}),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    FUNCTION = "blur"
+    CATEGORY = "AnotherUtils/utils"
+
+    def blur(self, mask, blur_radius, sigma):
+        if blur_radius == 0:
+            return (mask,)
+            
+        import scipy.ndimage
+        # Convert to numpy for scipy
+        mask_np = mask.cpu().numpy()
+        blurred_np = np.zeros_like(mask_np)
+        
+        for i in range(mask_np.shape[0]):
+            blurred_np[i] = scipy.ndimage.gaussian_filter(mask_np[i], sigma=sigma, radius=blur_radius)
+            
+        return (torch.from_numpy(blurred_np).to(mask.device),)

@@ -61,7 +61,9 @@ from .inference_nodes import (
     AnotherBBoxToPoints,
     AnotherPoseToPoints,
     AnotherImageToMask,
-    AnotherMaskToImage
+    AnotherMaskToImage,
+    AnotherMaskMath,
+    AnotherMaskBlur
 )
 from .core import server_routes  # Register Custom API Routes
 
@@ -119,6 +121,8 @@ NODE_CLASS_MAPPINGS = {
     "AnotherPoseToPoints": AnotherPoseToPoints,
     "AnotherImageToMask": AnotherImageToMask,
     "AnotherMaskToImage": AnotherMaskToImage,
+    "AnotherMaskMath": AnotherMaskMath,
+    "AnotherMaskBlur": AnotherMaskBlur,
 }
 
 # Add V3 nodes if the new API is available
@@ -178,6 +182,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnotherPoseToPoints": "Pose Keypoints to Points (JSON)",
     "AnotherImageToMask": "Image to Mask (AnotherUtils)",
     "AnotherMaskToImage": "Mask to Image (AnotherUtils)",
+    "AnotherMaskMath": "Mask Mathematics (AnotherUtils)",
+    "AnotherMaskBlur": "Mask Gaussian Blur (AnotherUtils)",
 }
 
 # Add V3 display names if available
