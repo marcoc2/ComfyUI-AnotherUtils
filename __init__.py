@@ -51,6 +51,8 @@ from .video.ltxv_vid2vid import LTXVVid2Vid
 from .loaders.folder_image_loader import FolderImageLoader
 from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
+from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
+from .image_processing.point_collector import PointCollectorSAM2
 from .core import server_routes  # Register Custom API Routes
 
 NODE_CLASS_MAPPINGS = {
@@ -93,6 +95,12 @@ NODE_CLASS_MAPPINGS = {
     "ImageListSampler": ImageListSampler,
     "LTXVMultiGuide": LTXVMultiGuide,
     "LTXVVid2Vid": LTXVVid2Vid,
+    "SEGStoBBox": SEGStoBBox,
+    "SEGStoSAM2Points": SEGStoSAM2Points,
+    "GetFirstFrame": GetFirstFrame,
+    "ManualPointToSAM2": ManualPointToSAM2,
+    "RefineMask": RefineMask,
+    "PointCollectorSAM2": PointCollectorSAM2,
 }
 
 # Add V3 nodes if the new API is available
@@ -138,6 +146,12 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImageListSampler": "Image List Sampler",
     "LTXVMultiGuide": "LTXV Multi Guide (N Frames)",
     "LTXVVid2Vid": "LTXV Vid2Vid Encode",
+    "SEGStoBBox": "SEGS to BBox",
+    "SEGStoSAM2Points": "SEGS to SAM2 Points (JSON)",
+    "GetFirstFrame": "Get First Frame (Batch to Single)",
+    "ManualPointToSAM2": "Manual Point to SAM2 (JSON)",
+    "RefineMask": "Refine Mask (Expand & Blur)",
+    "PointCollectorSAM2": "Interactive Point Collector (SAM2)",
 }
 
 # Add V3 display names if available
