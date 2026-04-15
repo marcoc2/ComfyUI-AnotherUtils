@@ -33,12 +33,18 @@ from .loaders.trello_browser import TrelloBrowser
 from .video.comparison_swipe import ComparisonSwipeNode
 from .video.folder_video_concatenator import FolderVideoConcatenator
 from .image_processing.interactive_crop import InteractiveCropNode
+from .image_processing.image_composite_masked import AnotherImageCompositeMasked
 from .loaders.caption_image_loader import CaptionImageLoader
 from .video.video_audio_combiner import (
     VideoAudioCombiner,
     VideoAudioCombinerSimple,
     HAS_NEW_VIDEO_API,
 )
+from .video.animated_composite import AnotherTransformKeyframes, AnotherAnimatedCompositeMasked, AnotherTransformOrchestrator
+from .video.camera_switcher import AnotherCameraSwitcher
+from .loaders.load_image_metadata import LoadImageAndExtractPrompt
+from .loaders.folder_image_metadata import FolderImageAndExtractPrompt
+from .loaders.folder_image_metadata_by_name import FolderImageMetadataByName
 
 if HAS_NEW_VIDEO_API:
     from .video.video_audio_combiner import VideoAudioCombinerV3
@@ -49,6 +55,8 @@ from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
 from .loaders.batch_image_list import BatchToImageList
 from .video.video_auto_sync_hstack import VideoAutoSyncHStack
 from .video.ltxv_multi_guide import LTXVMultiGuide
+from .video.ltxv_multi_concat import LTXVMultiConcat
+from .video.ltxv_multi_concat_beta import LTXVMultiConcatBeta
 from .video.ltxv_vid2vid import LTXVVid2Vid
 from .loaders.folder_image_loader import FolderImageLoader
 from .logic_management.dataset_loader import DatasetLoader
@@ -112,6 +120,8 @@ NODE_CLASS_MAPPINGS = {
     "DatasetLoader": DatasetLoader,
     "ImageListSampler": ImageListSampler,
     "LTXVMultiGuide": LTXVMultiGuide,
+    "LTXVMultiConcat": LTXVMultiConcat,
+    "LTXVMultiConcatBeta": LTXVMultiConcatBeta,
     "LTXVVid2Vid": LTXVVid2Vid,
     "SEGStoBBox": SEGStoBBox,
     "SEGStoSAM2Points": SEGStoSAM2Points,
@@ -129,12 +139,20 @@ NODE_CLASS_MAPPINGS = {
     "AnotherDepthInference": AnotherDepthInference,
     "AnotherBBoxToPoints": AnotherBBoxToPoints,
     "AnotherPoseToPoints": AnotherPoseToPoints,
+    "AnotherTransformKeyframes": AnotherTransformKeyframes,
+    "AnotherAnimatedCompositeMasked": AnotherAnimatedCompositeMasked,
+    "AnotherTransformOrchestrator": AnotherTransformOrchestrator,
+    "AnotherCameraSwitcher": AnotherCameraSwitcher,
+    "AnotherImageCompositeMasked": AnotherImageCompositeMasked,
     "AnotherImageToMask": AnotherImageToMask,
     "AnotherMaskToImage": AnotherMaskToImage,
     "AnotherMaskMath": AnotherMaskMath,
     "AnotherMaskBlur": AnotherMaskBlur,
     "TrelloPromptLoader": TrelloPromptLoader,
     "TrelloBrowser": TrelloBrowser,
+    "LoadImageAndExtractPrompt": LoadImageAndExtractPrompt,
+    "FolderImageAndExtractPrompt": FolderImageAndExtractPrompt,
+    "FolderImageMetadataByName": FolderImageMetadataByName,
 }
 
 # Add V3 nodes if the new API is available
@@ -179,6 +197,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DatasetLoader": "Dataset Loader (Images + Captions)",
     "ImageListSampler": "Image List Sampler",
     "LTXVMultiGuide": "LTXV Multi Guide (N Frames)",
+    "LTXVMultiConcat": "LTXV Multi Concat (N Frames)",
+    "LTXVMultiConcatBeta": "LTXV Multi Concat (N Frames) (beta)",
     "LTXVVid2Vid": "LTXV Vid2Vid Encode",
     "SEGStoBBox": "SEGS to BBox",
     "SEGStoSAM2Points": "SEGS to SAM2 Points (JSON)",
@@ -196,12 +216,20 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnotherDepthInference": "DepthAnything Inference (AnotherUtils)",
     "AnotherBBoxToPoints": "BBox to Central Point (JSON)",
     "AnotherPoseToPoints": "Pose Keypoints to Points (JSON)",
+    "AnotherTransformKeyframes": "Transform Keyframes (Math)",
+    "AnotherAnimatedCompositeMasked": "Animated Composite Masked (Batch)",
+    "AnotherTransformOrchestrator": "Transform Orchestrator (Multi-Segment)",
+    "AnotherCameraSwitcher": "Camera Switcher (Multi-Video Director)",
+    "AnotherImageCompositeMasked": "ImageCompositeMasked (AnotherUtils Memory Safe)",
     "AnotherImageToMask": "Image to Mask (AnotherUtils)",
     "AnotherMaskToImage": "Mask to Image (AnotherUtils)",
     "AnotherMaskMath": "Mask Mathematics (AnotherUtils)",
     "AnotherMaskBlur": "Mask Gaussian Blur (AnotherUtils)",
     "TrelloPromptLoader": "Trello Prompt Loader",
     "TrelloBrowser": "Trello Browser (Advanced)",
+    "LoadImageAndExtractPrompt": "Load Image and Extract Prompt",
+    "FolderImageAndExtractPrompt": "Folder Image and Extract Prompt",
+    "FolderImageMetadataByName": "Folder Metadata by Node Name",
 }
 
 # Add V3 display names if available

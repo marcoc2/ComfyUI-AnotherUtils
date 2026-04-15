@@ -5,6 +5,8 @@ class ImageListSampler:
             "required": {
                 "images": ("IMAGE",),
                 "count": ("INT", {"default": 3, "min": 1, "max": 10000, "step": 1}),
+                "target_frames": ("INT", {"default": 0, "min": 0, "max": 10000, "step": 1, 
+                                          "tooltip": "If > 0, outputs indices scaled to this length. Example: Use target_frames=97 for LTXV video generation."}),
             }
         }
 
@@ -15,15 +17,14 @@ class ImageListSampler:
     FUNCTION = "sample_images"
     CATEGORY = "AnotherUtils/logic"
 
-    def sample_images(self, images, count):
-        # When INPUT_IS_LIST is True, all inputs arrive as lists
+    def sample_images(self, images, count, target_frames=0):
         # Unwrap parameters that should be single values
         cnt = count[0] if isinstance(count, list) else count
+        tgt_frames = target_frames[0] if isinstance(target_frames, list) else target_frames
         
         if not images:
-            return ([],)
+            return ([], [])
             
-        # Flatten list/batches into individual frames
         import torch
         all_frames = []
         for item in images:
@@ -39,14 +40,25 @@ class ImageListSampler:
         total = len(all_frames)
         if cnt <= 0:
             return ([], [])
-        
-        if cnt >= total:
-            return (all_frames, list(range(total)))
+            
+        if cnt == 1:
+            return ([all_frames[0]], [0])
 
-        # Calculate equally spaced indices
-        step = total / cnt
-        indices = [int(i * step) for i in range(cnt)]
+        # New math: Anchors to edges. 0 to total-1
+        step_img = (total - 1) / (cnt - 1) if (cnt - 1) > 0 else 0
+        img_indices = [int(round(i * step_img)) for i in range(cnt)]
         
-        sampled = [all_frames[i] for i in indices]
+        # Clamp to avoid rounding out-of-bounds just in case
+        img_indices = [max(0, min(total - 1, idx)) for idx in img_indices]
         
-        return (sampled, indices)
+        # Determine output indices (scaled to target_frames if provided)
+        if tgt_frames is not None and tgt_frames > 0:
+            step_tgt = (tgt_frames - 1) / (cnt - 1) if (cnt - 1) > 0 else 0
+            out_indices = [int(round(i * step_tgt)) for i in range(cnt)]
+            out_indices = [max(0, min(tgt_frames - 1, idx)) for idx in out_indices]
+        else:
+            out_indices = img_indices
+            
+        sampled = [all_frames[i] for i in img_indices]
+        
+        return (sampled, out_indices)
