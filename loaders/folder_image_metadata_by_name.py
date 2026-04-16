@@ -29,6 +29,9 @@ class FolderImageMetadataByName:
         if not metadata:
             return ""
         
+        node_name_clean = node_name.lower().strip()
+        
+        # 1. Try 'prompt' (Execution JSON)
         if 'prompt' in metadata:
             try:
                 prompt_json = json.loads(metadata['prompt'])
@@ -36,21 +39,36 @@ class FolderImageMetadataByName:
                     title = node.get('_meta', {}).get('title', '')
                     class_type = node.get('class_type', '')
                     
-                    if node_name.lower().strip() == title.lower().strip() or node_name.lower().strip() == class_type.lower().strip():
+                    if node_name_clean == title.lower().strip() or node_name_clean == class_type.lower().strip():
                         inputs = node.get('inputs', {})
-                        # Try known text fields first
+                        # Try known text fields or any direct string input
                         for key in ['text', 'text_g', 'string', 'text_l', 'caption']:
                             if key in inputs and isinstance(inputs[key], str):
                                 return inputs[key]
-                        # Fallback to any string input in the node
                         for val in inputs.values():
                             if isinstance(val, str) and len(val.strip()) > 0:
                                 return val
-                                
             except Exception as e:
                 print(f"[AnotherUtils] Error parsing prompt JSON: {e}")
+
+        # 2. Try 'workflow' (LiteGraph JSON) - Essential for Display Any / Show Text nodes
+        if 'workflow' in metadata:
+            try:
+                workflow_json = json.loads(metadata['workflow'])
+                for node in workflow_json.get('nodes', []):
+                    title = node.get('title', '')
+                    class_type = node.get('type', '')
+                    
+                    if node_name_clean == str(title).lower().strip() or node_name_clean == str(class_type).lower().strip():
+                        widgets = node.get('widgets_values', [])
+                        # Extract the first non-empty string from widgets
+                        for val in widgets:
+                            if isinstance(val, str) and len(str(val).strip()) > 0:
+                                return val
+            except Exception as e:
+                print(f"[AnotherUtils] Error parsing workflow JSON: {e}")
                 
-        # A1111 / WebUI Fallback just in case
+        # 3. A1111 / WebUI Fallback
         if 'parameters' in metadata:
             return metadata['parameters'].split("\n")[0]
             
