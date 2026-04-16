@@ -31,6 +31,7 @@ from .loaders.caption_image_loader import CaptionImageLoader
 from .loaders.load_image_metadata import LoadImageAndExtractPrompt
 from .loaders.folder_image_metadata import FolderImageAndExtractPrompt
 from .loaders.folder_image_metadata_by_name import FolderImageMetadataByName
+from .loaders.save_image_with_tag import AnotherSaveImageWithTag
 from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
 from .loaders.batch_image_list import BatchToImageList
 from .loaders.folder_image_loader import FolderImageLoader
@@ -167,6 +168,8 @@ NODE_CLASS_MAPPINGS = {
     "LoadImageAndExtractPrompt": LoadImageAndExtractPrompt,
     "FolderImageAndExtractPrompt": FolderImageAndExtractPrompt,
     "FolderImageMetadataByName": FolderImageMetadataByName,
+    "AnotherSaveImageWithTag": AnotherSaveImageWithTag,
+    "FolderImageLoader": FolderImageLoader,
     "ImageListToBatch": ImageListToBatch,
     "IndicesListTo50": IndicesListTo50,
 }
@@ -239,6 +242,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadImageAndExtractPrompt": "Load Image and Extract Prompt",
     "FolderImageAndExtractPrompt": "Folder Image and Extract Prompt",
     "FolderImageMetadataByName": "Folder Metadata by Node Name",
+    "AnotherSaveImageWithTag": "Another Save Image with Tag",
+    "FolderImageLoader": "Folder Image Loader",
     "ImageListToBatch": "Image List To Multi Batch",
     "IndicesListTo 50": "Indices List To 50 Inputs",
 }

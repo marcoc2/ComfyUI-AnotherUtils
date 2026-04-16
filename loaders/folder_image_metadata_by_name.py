@@ -29,6 +29,10 @@ class FolderImageMetadataByName:
         if not metadata:
             return ""
         
+        # 0. Check for custom embedded tag FIRST (best for batches)
+        if 'another_tag' in metadata:
+            return str(metadata['another_tag'])
+        
         node_name_clean = node_name.lower().strip()
         
         # 1. Try 'prompt' (Execution JSON)
