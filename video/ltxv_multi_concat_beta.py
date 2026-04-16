@@ -122,8 +122,6 @@ class LTXVMultiConcatBeta:
             
         _, _, lat_len, lat_h, lat_w = latent_samples.shape
 
-        new_latent = latent.copy()
-
         if not smooth_strength:
             # Original behavior
             for i in range(n):
@@ -152,12 +150,12 @@ class LTXVMultiConcatBeta:
             if not anchors:
                 if is_nested:
                     from comfy.nested_tensor import NestedTensor
-                    new_latent["samples"] = NestedTensor((latent_samples, audio_samples))
-                    new_latent["noise_mask"] = noise_mask
+                    early_latent = latent.copy()
+                    early_latent["samples"] = NestedTensor((latent_samples, audio_samples))
+                    early_latent["noise_mask"] = noise_mask
                 else:
-                    new_latent["samples"] = latent_samples
-                    new_latent["noise_mask"] = noise_mask
-                return (positive, negative, new_latent)
+                    early_latent = {"samples": latent_samples, "noise_mask": noise_mask}
+                return (positive, negative, early_latent)
 
             sorted_idx = sorted(anchors.keys())
 
@@ -219,8 +217,9 @@ class LTXVMultiConcatBeta:
 
         if is_nested:
             from comfy.nested_tensor import NestedTensor
+            # For AV latents, preserve audio metadata
+            new_latent = latent.copy()
             new_latent["samples"] = NestedTensor((latent_samples, audio_samples))
-            # Re-wrap noise_mask as NestedTensor to match samples structure.
             noise_mask_raw = latent.get("noise_mask", None)
             if noise_mask_raw is not None and isinstance(noise_mask_raw, NestedTensor):
                 audio_noise_mask = noise_mask_raw.tensors[1]
@@ -228,7 +227,7 @@ class LTXVMultiConcatBeta:
                 audio_noise_mask = torch.ones_like(audio_samples)
             new_latent["noise_mask"] = NestedTensor((noise_mask, audio_noise_mask))
         else:
-            new_latent["samples"] = latent_samples
-            new_latent["noise_mask"] = noise_mask
+            # Clean dict — no metadata carryover
+            new_latent = {"samples": latent_samples, "noise_mask": noise_mask}
 
         return (positive, negative, new_latent)

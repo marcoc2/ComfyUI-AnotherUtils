@@ -1,19 +1,21 @@
 """
 LTXVMultiGuide - Dynamic N-frame guide injection for LTX Video
-Uses the core LTXVAddGuide API (Technique B: append + RoPE repositioning)
+Pure mirror of LTXSequencer (WhatDreamsCost) behavior:
+- Uses ONLY append_keyframe (no manual attention entries)
+- Returns a CLEAN latent dict (no metadata carryover)
 """
 
 import torch
-from comfy_extras.nodes_lt import LTXVAddGuide, get_noise_mask, _append_guide_attention_entry
-
+from comfy_extras.nodes_lt import LTXVAddGuide, get_noise_mask
 
 from .ltxv_utils import resolve_frame_indices, parse_strengths, flatten_images
+
 
 class LTXVMultiGuide:
     """
     Injects N reference images as guides into an LTX Video latent.
     Each image is positioned at a specific point in the video timeline.
-    Wraps the core LTXVAddGuide internal methods in a loop for dynamic N.
+    Wraps the core LTXVAddGuide.append_keyframe in a loop for dynamic N.
     """
 
     @classmethod
@@ -82,9 +84,8 @@ class LTXVMultiGuide:
         positions_str = positions[0] if isinstance(positions, list) else (positions or "")
         strengths_str = strengths[0] if isinstance(strengths, list) else (strengths or "")
 
-        # Flatten images using utility
+        # Flatten images
         images_tensor = flatten_images(images)
-
         num_images = images_tensor.shape[0]
 
         # Unwrap indices list
@@ -92,7 +93,23 @@ class LTXVMultiGuide:
 
         scale_factors = vae.downscale_index_formula
         time_scale_factor = scale_factors[0]
-        latent_length = latent["samples"].shape[2]
+
+        # --- Mirror of LTXSequencer reference ---
+        # Clone to avoid mutating upstream latent
+        latent_image = latent["samples"].clone()
+
+        # Fetch or generate noise mask
+        if "noise_mask" in latent:
+            noise_mask = latent["noise_mask"].clone()
+        else:
+            batch, _, latent_frames, latent_height, latent_width = latent_image.shape
+            noise_mask = torch.ones(
+                (batch, 1, latent_frames, 1, 1),
+                dtype=torch.float32,
+                device=latent_image.device,
+            )
+
+        _, _, latent_length, latent_height, latent_width = latent_image.shape
         total_pixel_frames = (latent_length - 1) * time_scale_factor + 1
 
         frame_indices = resolve_frame_indices(
@@ -104,36 +121,26 @@ class LTXVMultiGuide:
         if num_images != len(frame_indices):
             print(f"[LTXVMultiGuide] Warning: {num_images} images vs {len(frame_indices)} positions. Using first {n}.")
 
-        latent_image = latent["samples"]
-        noise_mask = get_noise_mask(latent)
-        _, _, lat_len, lat_h, lat_w = latent_image.shape
-
-        cur_pos = positive
-        cur_neg = negative
-
+        # Process guide images — pure append_keyframe loop, NO attention entries
         for i in range(n):
             single_image = images_tensor[i:i+1]
             frame_idx = frame_indices[i]
             img_strength = strength_list[i]
 
-            _, t = LTXVAddGuide.encode(vae, lat_w, lat_h, single_image, scale_factors)
+            _, t = LTXVAddGuide.encode(vae, latent_width, latent_height, single_image, scale_factors)
 
             frame_idx, latent_idx = LTXVAddGuide.get_latent_index(
-                cur_pos, latent_image.shape[2], len(single_image), frame_idx, scale_factors
+                positive, latent_length, len(single_image), frame_idx, scale_factors
             )
 
-            cur_pos, cur_neg, latent_image, noise_mask = LTXVAddGuide.append_keyframe(
-                cur_pos, cur_neg,
+            # append_keyframe only — NO _append_guide_attention_entry
+            positive, negative, latent_image, noise_mask = LTXVAddGuide.append_keyframe(
+                positive, negative,
                 frame_idx,
                 latent_image, noise_mask,
                 t, img_strength,
                 scale_factors,
             )
 
-            pre_filter_count = t.shape[2] * t.shape[3] * t.shape[4]
-            guide_latent_shape = list(t.shape[2:])
-            cur_pos, cur_neg = _append_guide_attention_entry(
-                cur_pos, cur_neg, pre_filter_count, guide_latent_shape, strength=img_strength,
-            )
-
-        return (cur_pos, cur_neg, {"samples": latent_image, "noise_mask": noise_mask})
+        # Return CLEAN dict — no metadata carryover
+        return (positive, negative, {"samples": latent_image, "noise_mask": noise_mask})

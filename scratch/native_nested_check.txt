@@ -1,0 +1,2 @@
+Native NT creation failed: All Tensors given to nested_tensor must have the same dimension. Found dimension 4 for Tensor at index 1 and dimension 5 for Tensor at index 0.
+Standard tensor is_nested: False

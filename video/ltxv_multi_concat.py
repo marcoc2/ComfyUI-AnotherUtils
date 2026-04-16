@@ -143,13 +143,12 @@ class LTXVMultiConcat:
                 # noise_mask is [B, 1, T, 1, 1] typically
                 noise_mask[:, :, latent_idx:latent_idx+t.shape[2], :, :] = 1.0 - strength
 
-        new_latent = latent.copy()
-
         if is_nested:
             from comfy.nested_tensor import NestedTensor
+            # For AV latents, preserve audio metadata (sample_rate, type, etc.)
+            new_latent = latent.copy()
             new_latent["samples"] = NestedTensor((latent_samples, audio_samples))
             # Re-wrap noise_mask as NestedTensor to match samples structure.
-            # The audio mask stays unchanged (all ones = fully denoised).
             noise_mask_raw = latent.get("noise_mask", None)
             if noise_mask_raw is not None and isinstance(noise_mask_raw, NestedTensor):
                 audio_noise_mask = noise_mask_raw.tensors[1]
@@ -157,8 +156,8 @@ class LTXVMultiConcat:
                 audio_noise_mask = torch.ones_like(audio_samples)
             new_latent["noise_mask"] = NestedTensor((noise_mask, audio_noise_mask))
         else:
-            new_latent["samples"] = latent_samples
-            new_latent["noise_mask"] = noise_mask
+            # Clean dict — no metadata carryover from previous stages
+            new_latent = {"samples": latent_samples, "noise_mask": noise_mask}
 
         # In Concat mode, we DON'T modify conditioning with attention entries.
         # We just return the modified latent with frames and mask.
