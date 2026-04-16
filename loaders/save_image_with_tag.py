@@ -31,17 +31,36 @@ class AnotherSaveImageWithTag:
     def save_images(self, images, custom_tag, filename_prefix):
         filename_prefix = filename_prefix[0] if isinstance(filename_prefix, list) else filename_prefix
         
-        # Determine number of items to process
-        num_images = len(images)
-        num_tags = len(custom_tag)
+        # Flatten all images and tags to ensure we handle batches and lists correctly
+        flat_images = []
+        for img in images:
+            if len(img.shape) == 4: # (B, H, W, C)
+                for b in range(img.shape[0]):
+                    flat_images.append(img[b])
+            else:
+                flat_images.append(img)
+                
+        flat_tags = []
+        for tag in custom_tag:
+            if isinstance(tag, list):
+                flat_tags.extend(tag)
+            else:
+                flat_tags.append(tag)
+        
+        num_images = len(flat_images)
+        num_tags = len(flat_tags)
         
         results = list()
         for i in range(num_images):
-            img_tensor = images[i]
+            img_tensor = flat_images[i]
             # Handle list mapping for tags
-            tag_value = custom_tag[i] if i < num_tags else custom_tag[-1]
+            tag_value = flat_tags[i] if i < num_tags else flat_tags[-1]
             
-            # Convert tensor to PIL
+            # Convert tensor (H, W, C) to PIL
+            # Ensure we remove any remaining leading 1s if they exist
+            if len(img_tensor.shape) == 3 and img_tensor.shape[0] == 1: # (1, H, W) -> shouldn't happen but safe
+                img_tensor = img_tensor.squeeze(0)
+                
             i_numpy = 255. * img_tensor.cpu().numpy()
             img = Image.fromarray(np.clip(i_numpy, 0, 255).astype(np.uint8))
             
@@ -51,9 +70,6 @@ class AnotherSaveImageWithTag:
             
             # Prepare Metadata
             metadata = PngInfo()
-            # Standard ComfyUI stuff (not strictly required if we only want our tag, 
-            # but usually good for compatibility)
-            # However, we ONLY care about the custom tag for recovery.
             metadata.add_text("another_tag", str(tag_value))
             
             # Save
@@ -65,6 +81,5 @@ class AnotherSaveImageWithTag:
                 "subfolder": subfolder,
                 "type": self.type
             })
-            counter += 1
 
         return { "ui": { "images": results } }

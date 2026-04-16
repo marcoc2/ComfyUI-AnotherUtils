@@ -82,6 +82,9 @@ class AnotherLTXSequencer:
         if len(idx_list) > 1:
             effective_num_images = min(len(idx_list), batch_size)
 
+        cur_pos = positive[0]
+        cur_neg = negative[0]
+
         # Process guide images — pure append_keyframe loop, no attention entries
         for i in range(1, effective_num_images + 1):
             if i > batch_size:
