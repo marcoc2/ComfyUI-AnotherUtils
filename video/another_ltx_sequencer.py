@@ -74,9 +74,12 @@ class AnotherLTXSequencer:
         batch_size = multi_input.shape[0] if multi_input is not None else 0
 
         # Automation: Use indices count if provided
-        effective_num_images = num_images
+        effective_num_images = n_imgs
         if len(idx_list) > 1:
             effective_num_images = min(len(idx_list), batch_size)
+            print(f"[AnotherLTXSequencer] AUTOMATION: Using {effective_num_images} images based on indices list.")
+
+        print(f"[AnotherLTXSequencer] DEBUG: Requested={n_imgs}, Batch={batch_size}, Indices={idx_list}")
 
         # Initialize current conditioning (FIXED: removed the double [0] unwrap here!)
         cur_pos = positive
@@ -106,6 +109,8 @@ class AnotherLTXSequencer:
             frame_idx, latent_idx = LTXVAddGuide.get_latent_index(
                 cur_pos, latent_length, len(image_1), f_idx, scale_factors
             )
+            
+            print(f"[AnotherLTXSequencer] DEBUG: Processing image {i}/{effective_num_images} at frame {f_idx} (latent_idx: {latent_idx})")
 
             # append_keyframe only
             cur_pos, cur_neg, latent_image, noise_mask = LTXVAddGuide.append_keyframe(
