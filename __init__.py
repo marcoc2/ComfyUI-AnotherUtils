@@ -7,62 +7,76 @@ __version__ = "1.0.0"
 __author__ = "marcoags"
 __package_name__ = "AnotherUtils"
 
+import logging
+
+# Basic Image Processing
 from .image_processing.custom_crop import CustomCropNode
 from .image_processing.smart_resize import SmartResizeNode
 from .image_processing.nearest_upscale import NearestUpscaleNode
 from .image_processing.image_grid_slicer import ImageGridSlicer
+from .image_processing.remove_alpha import RemoveAlphaNode
+from .image_processing.interactive_crop import InteractiveCropNode
+from .image_processing.image_composite_masked import AnotherImageCompositeMasked
+from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
+from .image_processing.point_collector import PointCollectorSAM2
+
+# Loaders
 from .loaders.load_images import LoadImagesOriginalSize
-from .pixel_art.pixel_normalizer import PixelArtNormalizerNode
-from .characters.fighting_game_character import FightingGameCharacter
-from .characters.walking_pose import WalkingPoseGenerator
 from .loaders.load_remove_alpha import LoadImageRemoveAlpha
+from .loaders.last_image import LastImage
+from .loaders.csv_prompt_loader import CSVPromptLoader
+from .loaders.trello_prompt_loader import TrelloPromptLoader
+from .loaders.trello_browser import TrelloBrowser
+from .loaders.caption_image_loader import CaptionImageLoader
+from .loaders.load_image_metadata import LoadImageAndExtractPrompt
+from .loaders.folder_image_metadata import FolderImageAndExtractPrompt
+from .loaders.folder_image_metadata_by_name import FolderImageMetadataByName
+from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
+from .loaders.batch_image_list import BatchToImageList
+from .loaders.folder_image_loader import FolderImageLoader
+
+# Pixel Art
+from .pixel_art.pixel_normalizer import PixelArtNormalizerNode
 from .pixel_art.pixel_art_converter import PixelArtConverterNode
 from .pixel_art.pixel_art_converter_parallel import PixelArtConverterNodeParallel
-from .loaders.last_image import LastImage
+
+# Characters
+from .characters.fighting_game_character import FightingGameCharacter
+from .characters.walking_pose import WalkingPoseGenerator
 from .characters.character_constructor import CharacterConstructor
 from .characters.character_generator import CharacterRandomizer
-from .image_processing.remove_alpha import RemoveAlphaNode
+
+# GIMP / GEGL Like
 from .gimp_nodes.adaptive_noise import AdaptiveNoise
 from .gimp_nodes.cie_lch_noise_gegl_like import CIELChNoiseGEGLLike
 from .gimp_nodes.image_type_detector import ImageTypeDetector
 from .gimp_nodes.mean_curvature_blur_gegl_like import MeanCurvatureBlurGEGLLike
 from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
-from .loaders.csv_prompt_loader import CSVPromptLoader
-from .loaders.trello_prompt_loader import TrelloPromptLoader
-from .loaders.trello_browser import TrelloBrowser
+
+# Video General
 from .video.comparison_swipe import ComparisonSwipeNode
 from .video.folder_video_concatenator import FolderVideoConcatenator
-from .image_processing.interactive_crop import InteractiveCropNode
-from .image_processing.image_composite_masked import AnotherImageCompositeMasked
-from .loaders.caption_image_loader import CaptionImageLoader
+from .video.animated_composite import AnotherTransformKeyframes, AnotherAnimatedCompositeMasked, AnotherTransformOrchestrator
+from .video.camera_switcher import AnotherCameraSwitcher
+from .video.video_auto_sync_hstack import VideoAutoSyncHStack
 from .video.video_audio_combiner import (
     VideoAudioCombiner,
     VideoAudioCombinerSimple,
     HAS_NEW_VIDEO_API,
 )
-from .video.animated_composite import AnotherTransformKeyframes, AnotherAnimatedCompositeMasked, AnotherTransformOrchestrator
-from .video.camera_switcher import AnotherCameraSwitcher
-from .loaders.load_image_metadata import LoadImageAndExtractPrompt
-from .loaders.folder_image_metadata import FolderImageAndExtractPrompt
-from .loaders.folder_image_metadata_by_name import FolderImageMetadataByName
 
-if HAS_NEW_VIDEO_API:
-    from .video.video_audio_combiner import VideoAudioCombinerV3
+# Audio
 from .audio.audio_waveform_slicer import AudioWaveformSlicer
 from .audio.audio_slice_selector import AudioSliceSelector
 from .audio.audio_concatenate import AudioConcatenate
-from .loaders.load_gif_frames import LoadGifFrames, RemapGifFrames
-from .loaders.batch_image_list import BatchToImageList
-from .video.video_auto_sync_hstack import VideoAutoSyncHStack
-from .video.ltxv_multi_guide import LTXVMultiGuide
-from .video.ltxv_multi_concat import LTXVMultiConcat
-from .video.ltxv_multi_concat_beta import LTXVMultiConcatBeta
-from .video.ltxv_vid2vid import LTXVVid2Vid
-from .loaders.folder_image_loader import FolderImageLoader
+
+# Logic & Management
+from .logic_management.image_list_to_batch import ImageListToBatch
+from .logic_management.indices_list_to_50 import IndicesListTo50
 from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
-from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
-from .image_processing.point_collector import PointCollectorSAM2
+
+# Inference
 from .inference_nodes import (
     AnotherLoadYOLO,
     AnotherLoadSAM2,
@@ -79,8 +93,10 @@ from .inference_nodes import (
     AnotherMaskMath,
     AnotherMaskBlur
 )
+
 from .core import server_routes  # Register Custom API Routes
 
+# Initial Mappings
 NODE_CLASS_MAPPINGS = {
     "CustomCrop": CustomCropNode,
     "SmartResize": SmartResizeNode,
@@ -119,10 +135,6 @@ NODE_CLASS_MAPPINGS = {
     "FolderImageLoader": FolderImageLoader,
     "DatasetLoader": DatasetLoader,
     "ImageListSampler": ImageListSampler,
-    "LTXVMultiGuide": LTXVMultiGuide,
-    "LTXVMultiConcat": LTXVMultiConcat,
-    "LTXVMultiConcatBeta": LTXVMultiConcatBeta,
-    "LTXVVid2Vid": LTXVVid2Vid,
     "SEGStoBBox": SEGStoBBox,
     "SEGStoSAM2Points": SEGStoSAM2Points,
     "GetFirstFrame": GetFirstFrame,
@@ -153,11 +165,9 @@ NODE_CLASS_MAPPINGS = {
     "LoadImageAndExtractPrompt": LoadImageAndExtractPrompt,
     "FolderImageAndExtractPrompt": FolderImageAndExtractPrompt,
     "FolderImageMetadataByName": FolderImageMetadataByName,
+    "ImageListToBatch": ImageListToBatch,
+    "IndicesListTo50": IndicesListTo50,
 }
-
-# Add V3 nodes if the new API is available
-if HAS_NEW_VIDEO_API:
-    NODE_CLASS_MAPPINGS["VideoAudioCombinerV3"] = VideoAudioCombinerV3
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "CustomCrop": "Custom Crop",
@@ -196,10 +206,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FolderImageLoader": "Folder Image Loader",
     "DatasetLoader": "Dataset Loader (Images + Captions)",
     "ImageListSampler": "Image List Sampler",
-    "LTXVMultiGuide": "LTXV Multi Guide (N Frames)",
-    "LTXVMultiConcat": "LTXV Multi Concat (N Frames)",
-    "LTXVMultiConcatBeta": "LTXV Multi Concat (N Frames) (beta)",
-    "LTXVVid2Vid": "LTXV Vid2Vid Encode",
     "SEGStoBBox": "SEGS to BBox",
     "SEGStoSAM2Points": "SEGS to SAM2 Points (JSON)",
     "GetFirstFrame": "Get First Frame (Batch to Single)",
@@ -230,11 +236,42 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadImageAndExtractPrompt": "Load Image and Extract Prompt",
     "FolderImageAndExtractPrompt": "Folder Image and Extract Prompt",
     "FolderImageMetadataByName": "Folder Metadata by Node Name",
+    "ImageListToBatch": "Image List To Multi Batch",
+    "IndicesListTo 50": "Indices List To 50 Inputs",
 }
 
-# Add V3 display names if available
+# LTX Video Specific - Conditional Loading
 if HAS_NEW_VIDEO_API:
-    NODE_DISPLAY_NAME_MAPPINGS["VideoAudioCombinerV3"] = "Video + Audio Combiner (V3)"
+    try:
+        from .video.video_audio_combiner import VideoAudioCombinerV3
+        from .video.ltxv_multi_guide import LTXVMultiGuide
+        from .video.another_ltx_sequencer import AnotherLTXSequencer
+        from .video.ltxv_multi_concat import LTXVMultiConcat
+        from .video.ltxv_multi_concat_beta import LTXVMultiConcatBeta
+        from .video.ltxv_vid2vid import LTXVVid2Vid
+        from .video.ltxv_diagnostic import LTXVDiagnosticNode
+
+        NODE_CLASS_MAPPINGS.update({
+            "VideoAudioCombinerV3": VideoAudioCombinerV3,
+            "LTXVMultiGuide": LTXVMultiGuide,
+            "AnotherLTXSequencer": AnotherLTXSequencer,
+            "LTXVMultiConcat": LTXVMultiConcat,
+            "LTXVMultiConcatBeta": LTXVMultiConcatBeta,
+            "LTXVVid2Vid": LTXVVid2Vid,
+            "LTXVDiagnosticNode": LTXVDiagnosticNode,
+        })
+
+        NODE_DISPLAY_NAME_MAPPINGS.update({
+            "VideoAudioCombinerV3": "Video + Audio Combiner (V3)",
+            "LTXVMultiGuide": "LTXV Multi Guide (N Frames)",
+            "AnotherLTXSequencer": "LTX Sequencer (Automated)",
+            "LTXVMultiConcat": "LTXV Multi Concat (N Frames)",
+            "LTXVMultiConcatBeta": "LTXV Multi Concat (N Frames) (beta)",
+            "LTXVVid2Vid": "LTXV Vid2Vid Encode",
+            "LTXVDiagnosticNode": "LTXV Diagnostic (Shape Checker)",
+        })
+    except Exception as e:
+        logging.error(f"Failed to load LTX Video extension nodes: {e}")
 
 WEB_DIRECTORY = "./js"
 

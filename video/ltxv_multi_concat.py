@@ -1,5 +1,7 @@
 import torch
 from comfy_extras.nodes_lt import LTXVAddGuide, get_noise_mask
+from typing import Dict, Tuple, Any
+import logging
 from .ltxv_utils import resolve_frame_indices, parse_strengths, flatten_images
 
 class LTXVMultiConcat:
@@ -83,7 +85,20 @@ class LTXVMultiConcat:
 
         scale_factors = vae.downscale_index_formula
         time_scale_factor = scale_factors[0]
-        latent_samples = latent["samples"].clone()
+
+        # Handle NestedTensor from audio-enabled latents
+        try:
+            from comfy.nested_tensor import NestedTensor
+            is_nested = isinstance(latent["samples"], NestedTensor)
+        except ImportError:
+            is_nested = False
+
+        if is_nested:
+            latent_samples = latent["samples"].tensors[0].clone()
+            audio_samples = latent["samples"].tensors[1]
+        else:
+            latent_samples = latent["samples"].clone()
+            
         latent_length = latent_samples.shape[2]
         total_pixel_frames = (latent_length - 1) * time_scale_factor + 1
 
@@ -94,7 +109,17 @@ class LTXVMultiConcat:
 
         n = min(num_images, len(frame_indices))
         
-        noise_mask = get_noise_mask(latent).clone()
+        has_nested_mask = False
+        noise_mask_obj = get_noise_mask(latent)
+        if is_nested:
+            from comfy.nested_tensor import NestedTensor
+            if isinstance(noise_mask_obj, NestedTensor):
+                noise_mask = noise_mask_obj.tensors[0].clone()
+            else:
+                noise_mask = noise_mask_obj.clone()
+        else:
+            noise_mask = noise_mask_obj.clone()
+            
         _, _, lat_len, lat_h, lat_w = latent_samples.shape
 
         for i in range(n):
@@ -118,6 +143,23 @@ class LTXVMultiConcat:
                 # noise_mask is [B, 1, T, 1, 1] typically
                 noise_mask[:, :, latent_idx:latent_idx+t.shape[2], :, :] = 1.0 - strength
 
+        new_latent = latent.copy()
+
+        if is_nested:
+            from comfy.nested_tensor import NestedTensor
+            new_latent["samples"] = NestedTensor((latent_samples, audio_samples))
+            # Re-wrap noise_mask as NestedTensor to match samples structure.
+            # The audio mask stays unchanged (all ones = fully denoised).
+            noise_mask_raw = latent.get("noise_mask", None)
+            if noise_mask_raw is not None and isinstance(noise_mask_raw, NestedTensor):
+                audio_noise_mask = noise_mask_raw.tensors[1]
+            else:
+                audio_noise_mask = torch.ones_like(audio_samples)
+            new_latent["noise_mask"] = NestedTensor((noise_mask, audio_noise_mask))
+        else:
+            new_latent["samples"] = latent_samples
+            new_latent["noise_mask"] = noise_mask
+
         # In Concat mode, we DON'T modify conditioning with attention entries.
         # We just return the modified latent with frames and mask.
-        return (positive, negative, {"samples": latent_samples, "noise_mask": noise_mask})
+        return (positive, negative, new_latent)
