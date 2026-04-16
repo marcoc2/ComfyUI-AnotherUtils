@@ -75,6 +75,7 @@ from .logic_management.image_list_to_batch import ImageListToBatch
 from .logic_management.indices_list_to_50 import IndicesListTo50
 from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
+from .logic_management.debug_list import AnotherShowList
 
 # Inference
 from .inference_nodes import (
@@ -135,6 +136,7 @@ NODE_CLASS_MAPPINGS = {
     "FolderImageLoader": FolderImageLoader,
     "DatasetLoader": DatasetLoader,
     "ImageListSampler": ImageListSampler,
+    "AnotherShowList": AnotherShowList,
     "SEGStoBBox": SEGStoBBox,
     "SEGStoSAM2Points": SEGStoSAM2Points,
     "GetFirstFrame": GetFirstFrame,
@@ -206,6 +208,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FolderImageLoader": "Folder Image Loader",
     "DatasetLoader": "Dataset Loader (Images + Captions)",
     "ImageListSampler": "Image List Sampler",
+    "AnotherShowList": "Debug List (AnotherUtils)",
     "SEGStoBBox": "SEGS to BBox",
     "SEGStoSAM2Points": "SEGS to SAM2 Points (JSON)",
     "GetFirstFrame": "Get First Frame (Batch to Single)",
