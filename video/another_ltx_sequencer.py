@@ -3,14 +3,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class AnotherLTXSequencer:
     """
     Automated version of LTXSequencer (Guide mode).
     Pure mirror of the WhatDreamsCost LTXSequencer behavior:
     - Uses ONLY append_keyframe (no manual attention entries)
     - Returns a CLEAN latent dict (no metadata carryover)
-    - Clones samples to avoid mutating upstream tensors
+    - Automatically detects number of images from the index list
     """
 
     @classmethod
@@ -40,32 +39,29 @@ class AnotherLTXSequencer:
         from comfy_extras.nodes_lt import LTXVAddGuide, get_noise_mask
 
         # Unwrap list inputs because INPUT_IS_LIST = True
-        positive = positive[0] if isinstance(positive, list) else positive
-        negative = negative[0] if isinstance(negative, list) else negative
-        vae = vae[0] if isinstance(vae, list) else vae
-        latent = latent[0] if isinstance(latent, list) else latent
-        multi_input = multi_input[0] if isinstance(multi_input, list) else multi_input
-        num_images = num_images[0] if isinstance(num_images, list) else num_images
-        insert_mode = insert_mode[0] if isinstance(insert_mode, list) else insert_mode
-        frame_rate = frame_rate[0] if isinstance(frame_rate, list) else frame_rate
-        strength = strength[0] if isinstance(strength, list) else strength
+        pos = positive[0] if isinstance(positive, list) else positive
+        neg = negative[0] if isinstance(negative, list) else negative
+        v = vae[0] if isinstance(vae, list) else vae
+        lat = latent[0] if isinstance(latent, list) else latent
+        m_input = multi_input[0] if isinstance(multi_input, list) else multi_input
+        n_imgs = num_images[0] if isinstance(num_images, list) else num_images
+        i_mode = insert_mode[0] if isinstance(insert_mode, list) else insert_mode
+        f_rate = frame_rate[0] if isinstance(frame_rate, list) else frame_rate
+        str_val = strength[0] if isinstance(strength, list) else strength
 
-        # Indices list
+        # Indices list automation
         idx_list = indices if isinstance(indices, list) else [indices]
         if len(idx_list) > 0 and isinstance(idx_list[0], list):
             idx_list = idx_list[0]
 
-        print(f"[AnotherLTXSequencer] DEBUG: num_images requested={num_images}, indices found={len(idx_list)}, list={idx_list}")
+        scale_factors = v.downscale_index_formula
 
-        scale_factors = vae.downscale_index_formula
+        # Clone to avoid mutating upstream latent
+        latent_image = lat["samples"].clone()
 
-        # --- Mirror of LTXSequencer reference ---
-        # Clone to avoid mutating upstream latent (same as reference line 72)
-        latent_image = latent["samples"].clone()
-
-        # Fetch or generate noise mask (same as reference lines 75-83)
-        if "noise_mask" in latent:
-            noise_mask = latent["noise_mask"].clone()
+        # Fetch or generate noise mask
+        if "noise_mask" in lat:
+            noise_mask = lat["noise_mask"].clone()
         else:
             batch, _, latent_frames, latent_height, latent_width = latent_image.shape
             noise_mask = torch.ones(
@@ -75,22 +71,23 @@ class AnotherLTXSequencer:
             )
 
         _, _, latent_length, latent_height, latent_width = latent_image.shape
-        batch_size = multi_input.shape[0] if multi_input is not None else 0
+        batch_size = m_input.shape[0] if m_input is not None else 0
 
-        # Automation: If we receive a list of indices, use that count instead of the manual 'num_images' widget
-        effective_num_images = num_images
+        # Automation: Use indices count if provided
+        effective_num_images = n_imgs
         if len(idx_list) > 1:
             effective_num_images = min(len(idx_list), batch_size)
 
-        cur_pos = positive[0]
-        cur_neg = negative[0]
+        # Initialize current conditioning
+        cur_pos = pos
+        cur_neg = neg
 
         # Process guide images — pure append_keyframe loop, no attention entries
         for i in range(1, effective_num_images + 1):
             if i > batch_size:
                 continue
 
-            img = multi_input[i-1:i]
+            img = m_input[i-1:i]
             if img is None:
                 continue
 
@@ -99,18 +96,18 @@ class AnotherLTXSequencer:
 
             # Calculate frame index
             f_idx = idx_list[i-1]
-            if insert_mode == "seconds":
-                f_idx = int(f_idx * frame_rate)
+            if i_mode == "seconds":
+                f_idx = int(f_idx * f_rate)
 
-            # Encode image (same as reference line 117)
-            image_1, t = LTXVAddGuide.encode(vae, latent_width, latent_height, img, scale_factors)
+            # Encode image
+            image_1, t = LTXVAddGuide.encode(v, latent_width, latent_height, img, scale_factors)
 
-            # Get latent index using ORIGINAL latent_length (same as reference line 119)
+            # Get latent index using current conditioning
             frame_idx, latent_idx = LTXVAddGuide.get_latent_index(
                 cur_pos, latent_length, len(image_1), f_idx, scale_factors
             )
 
-            # append_keyframe only — NO _append_guide_attention_entry (same as reference lines 122-131)
+            # append_keyframe only
             cur_pos, cur_neg, latent_image, noise_mask = LTXVAddGuide.append_keyframe(
                 cur_pos,
                 cur_neg,
@@ -118,9 +115,9 @@ class AnotherLTXSequencer:
                 latent_image,
                 noise_mask,
                 t,
-                strength,
+                str_val,
                 scale_factors,
             )
 
-        # Return CLEAN dict — no latent.copy() metadata carryover (same as reference line 133)
+        # Return CLEAN dict
         return (cur_pos, cur_neg, {"samples": latent_image, "noise_mask": noise_mask})
