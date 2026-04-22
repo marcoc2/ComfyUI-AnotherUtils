@@ -19,6 +19,7 @@ from .image_processing.interactive_crop import InteractiveCropNode
 from .image_processing.image_composite_masked import AnotherImageCompositeMasked
 from .image_processing.segs_adapter import SEGStoBBox, SEGStoSAM2Points, GetFirstFrame, ManualPointToSAM2, RefineMask
 from .image_processing.point_collector import PointCollectorSAM2
+from .image_processing.comic_panel_detector import ComicPanelDetector
 
 # Loaders
 from .loaders.load_images import LoadImagesOriginalSize
@@ -27,6 +28,7 @@ from .loaders.last_image import LastImage
 from .loaders.csv_prompt_loader import CSVPromptLoader
 from .loaders.trello_prompt_loader import TrelloPromptLoader
 from .loaders.trello_browser import TrelloBrowser
+from .loaders.trello_list_loader import TrelloPromptListLoader
 from .loaders.caption_image_loader import CaptionImageLoader
 from .loaders.load_image_metadata import LoadImageAndExtractPrompt
 from .loaders.folder_image_metadata import FolderImageAndExtractPrompt
@@ -77,8 +79,10 @@ from .logic_management.indices_list_to_50 import IndicesListTo50
 from .logic_management.dataset_loader import DatasetLoader
 from .logic_management.image_list_sampler import ImageListSampler
 from .logic_management.debug_list import AnotherShowList
+from .logic_management.comic_sequence_joiner import ComicSequenceJoiner
 
 # Inference
+from .inference.qwen_vl_node import QwenVLNode
 from .inference_nodes import (
     AnotherLoadYOLO,
     AnotherLoadSAM2,
@@ -138,6 +142,7 @@ NODE_CLASS_MAPPINGS = {
     "DatasetLoader": DatasetLoader,
     "ImageListSampler": ImageListSampler,
     "AnotherShowList": AnotherShowList,
+    "ComicSequenceJoiner": ComicSequenceJoiner,
     "SEGStoBBox": SEGStoBBox,
     "SEGStoSAM2Points": SEGStoSAM2Points,
     "GetFirstFrame": GetFirstFrame,
@@ -165,6 +170,7 @@ NODE_CLASS_MAPPINGS = {
     "AnotherMaskBlur": AnotherMaskBlur,
     "TrelloPromptLoader": TrelloPromptLoader,
     "TrelloBrowser": TrelloBrowser,
+    "TrelloListLoader": TrelloPromptListLoader,
     "LoadImageAndExtractPrompt": LoadImageAndExtractPrompt,
     "FolderImageAndExtractPrompt": FolderImageAndExtractPrompt,
     "FolderImageMetadataByName": FolderImageMetadataByName,
@@ -172,6 +178,8 @@ NODE_CLASS_MAPPINGS = {
     "FolderImageLoader": FolderImageLoader,
     "ImageListToBatch": ImageListToBatch,
     "IndicesListTo50": IndicesListTo50,
+    "ComicPanelDetector": ComicPanelDetector,
+    "QwenVLNode": QwenVLNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -212,6 +220,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "DatasetLoader": "Dataset Loader (Images + Captions)",
     "ImageListSampler": "Image List Sampler",
     "AnotherShowList": "Debug List (AnotherUtils)",
+    "ComicSequenceJoiner": "Comic Sequence Joiner (AnotherUtils)",
     "SEGStoBBox": "SEGS to BBox",
     "SEGStoSAM2Points": "SEGS to SAM2 Points (JSON)",
     "GetFirstFrame": "Get First Frame (Batch to Single)",
@@ -239,6 +248,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AnotherMaskBlur": "Mask Gaussian Blur (AnotherUtils)",
     "TrelloPromptLoader": "Trello Prompt Loader",
     "TrelloBrowser": "Trello Browser (Advanced)",
+    "TrelloListLoader": "Trello List Loader (Batch)",
     "LoadImageAndExtractPrompt": "Load Image and Extract Prompt",
     "FolderImageAndExtractPrompt": "Folder Image and Extract Prompt",
     "FolderImageMetadataByName": "Folder Metadata by Node Name",
@@ -246,6 +256,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FolderImageLoader": "Folder Image Loader",
     "ImageListToBatch": "Image List To Multi Batch",
     "IndicesListTo 50": "Indices List To 50 Inputs",
+    "ComicPanelDetector": "Comic Panel Detector (AnotherUtils)",
+    "QwenVLNode": "Qwen2.5-VL Inference (AnotherUtils)",
 }
 
 # LTX Video Specific - Conditional Loading

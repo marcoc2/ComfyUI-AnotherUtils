@@ -4,7 +4,7 @@ import { api } from "../../scripts/api.js";
 app.registerExtension({
     name: "AnotherUtils.TrelloBrowser",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        if (nodeData.name === "TrelloBrowser") {
+        if (nodeData.name === "TrelloBrowser" || nodeData.name === "TrelloListLoader") {
             const onNodeCreated = nodeType.prototype.onNodeCreated;
             nodeType.prototype.onNodeCreated = function () {
                 const r = onNodeCreated ? onNodeCreated.apply(this, arguments) : undefined;
