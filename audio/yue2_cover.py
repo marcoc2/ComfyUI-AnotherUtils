@@ -170,7 +170,8 @@ def _load_audio(path):
     from comfy_extras.nodes_audio import f32_pcm
 
     frames, skipped = [], 0
-    with av.open(path) as container:
+    # Tags in Latin-1 (common in MP3s from the web) must not stop the audio from loading.
+    with av.open(path, metadata_errors="ignore") as container:
         if not container.streams.audio:
             raise ValueError(f"No audio stream in {path}.")
         stream = container.streams.audio[0]

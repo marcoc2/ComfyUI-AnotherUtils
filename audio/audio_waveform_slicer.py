@@ -17,7 +17,8 @@ def f32_pcm(wav: torch.Tensor) -> torch.Tensor:
 
 
 def load_audio(filepath: str) -> tuple:
-    with av.open(filepath) as af:
+    # Tags in Latin-1 (common in MP3s from the web) must not stop the audio from loading.
+    with av.open(filepath, metadata_errors="ignore") as af:
         if not af.streams.audio:
             raise ValueError("No audio stream found in the file.")
 
