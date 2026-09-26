@@ -72,6 +72,7 @@ from .video.video_audio_combiner import (
 from .audio.audio_waveform_slicer import AudioWaveformSlicer
 from .audio.audio_slice_selector import AudioSliceSelector
 from .audio.audio_concatenate import AudioConcatenate
+from .audio.yue2_cover import YuE2CoverSong, YuE2CoverLoras
 
 # Logic & Management
 from .logic_management.image_list_to_batch import ImageListToBatch
@@ -83,6 +84,7 @@ from .logic_management.comic_sequence_joiner import ComicSequenceJoiner
 
 # Inference
 from .inference.qwen_vl_node import QwenVLNode
+from .inference.deepseek_text import DeepSeekText
 from .inference_nodes import (
     AnotherLoadYOLO,
     AnotherLoadSAM2,
@@ -134,6 +136,8 @@ NODE_CLASS_MAPPINGS = {
     "AudioWaveformSlicer": AudioWaveformSlicer,
     "AudioSliceSelector": AudioSliceSelector,
     "AudioConcatenate": AudioConcatenate,
+    "YuE2CoverSong": YuE2CoverSong,
+    "YuE2CoverLoras": YuE2CoverLoras,
     "LoadGifFrames": LoadGifFrames,
     "RemapGifFrames": RemapGifFrames,
     "BatchToImageList": BatchToImageList,
@@ -180,6 +184,7 @@ NODE_CLASS_MAPPINGS = {
     "IndicesListTo50": IndicesListTo50,
     "ComicPanelDetector": ComicPanelDetector,
     "QwenVLNode": QwenVLNode,
+    "DeepSeekText": DeepSeekText,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -212,6 +217,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AudioWaveformSlicer": "Audio Waveform Slicer",
     "AudioSliceSelector": "Audio Slice Selector",
     "AudioConcatenate": "Audio Concatenate",
+    "YuE2CoverSong": "YuE2 Cover: Song",
+    "YuE2CoverLoras": "YuE2 Cover: LoRAs",
     "LoadGifFrames": "Load GIF Frames (Raw)",
     "RemapGifFrames": "Remap GIF Frames",
     "BatchToImageList": "Batch to Image List",
@@ -258,6 +265,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "IndicesListTo 50": "Indices List To 50 Inputs",
     "ComicPanelDetector": "Comic Panel Detector (AnotherUtils)",
     "QwenVLNode": "Qwen2.5-VL Inference (AnotherUtils)",
+    "DeepSeekText": "DeepSeek Text (AnotherUtils)",
 }
 
 # LTX Video Specific - Conditional Loading
