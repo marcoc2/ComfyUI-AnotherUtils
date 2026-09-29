@@ -58,6 +58,7 @@ from .gimp_nodes.rgb_noise_gegl_like import RGBNoiseGEGLLike
 
 # Video General
 from .video.comparison_swipe import ComparisonSwipeNode
+from .video.video_compare_slider import VideoCompareSlider
 from .video.folder_video_concatenator import FolderVideoConcatenator
 from .video.animated_composite import AnotherTransformKeyframes, AnotherAnimatedCompositeMasked, AnotherTransformOrchestrator
 from .video.camera_switcher import AnotherCameraSwitcher
@@ -128,6 +129,7 @@ NODE_CLASS_MAPPINGS = {
     "RGBNoiseGEGLLike": RGBNoiseGEGLLike,
     "CSVPromptLoader": CSVPromptLoader,
     "ComparisonSwipe": ComparisonSwipeNode,
+    "VideoCompareSlider": VideoCompareSlider,
     "FolderVideoConcatenator": FolderVideoConcatenator,
     "InteractiveCrop": InteractiveCropNode,
     "CaptionImageLoader": CaptionImageLoader,
@@ -209,6 +211,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RGBNoiseGEGLLike": "RGB Noise (GEGL-like)",
     "CSVPromptLoader": "CSV Prompt Loader",
     "ComparisonSwipe": "Comparison Swipe Video",
+    "VideoCompareSlider": "Video Compare Slider (AnotherUtils)",
     "FolderVideoConcatenator": "Folder Video Concatenator (OpenCV)",
     "InteractiveCrop": "Interactive Crop",
     "CaptionImageLoader": "Caption Image Loader",

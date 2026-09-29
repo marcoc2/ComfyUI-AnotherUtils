@@ -24,3 +24,6 @@ Calculates smooth interpolation for X, Y, and Scale (Zoom) parameters across N f
 
 #### Animated Composite Masked (Batch)
 High-performance compositor that uses Transform Data to move and resize a foreground batch over a background canvas. Built-in memory safety ensures it can handle 100+ frames without crashing ComfyUI's CPU memory. Supports **Anchor Modes** (Top-Left or Center).
+
+#### Video Compare Slider
+Compares two video batches frame-by-frame with a dynamic sliding wipe bar. Supports continuous ping-pong sweep across the video or pausing on key frames (proportional division via `pause_count` or explicit `custom_pause_frames`) to sweep the slider across the screen while freezing the frame for visual inspection.
